@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-sage text-primary-dark;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply text-base sm:text-[15px];
+  }
+}
+
+@layer utilities {
+  .field {
+    @apply w-full rounded-2xl border border-line bg-paper px-4 py-3 text-[15px] text-ink outline-none transition;
+  }
+
+  .field:focus {
+    @apply border-primary/40 bg-surface;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+
+  .chip {
+    @apply rounded-full border border-line bg-surface px-3.5 py-2 text-sm text-muted transition;
+  }
+
+  .chip-active {
+    @apply border-primary bg-sage text-primary-dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

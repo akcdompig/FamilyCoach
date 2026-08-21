@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Netlify auto-detects Next.js (App Router) and installs @netlify/plugin-nextjs,
+# which turns page routes into static/SSR output and app/api/* routes into
+# serverless functions automatically. No extra plugin config needed here.

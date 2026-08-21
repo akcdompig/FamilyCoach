@@ -1,0 +1,30 @@
+name: Reminder push check
+
+# Vercel's gratis Hobby-plan staat cron maar 1x per dag toe — te grof voor
+# tijdige herinneringen. GitHub Actions doet hier de "cron"-rol: elke 30
+# minuten deze workflow, die alleen /api/cron/reminders aanroept. 48x/dag
+# blijft ruim binnen de 2.000 gratis Actions-minuten/maand van een private
+# repo. Zet het interval strakker als deze repo publiek is (dan onbeperkt).
+#
+# Vereist twee repository secrets (Settings -> Secrets and variables -> Actions):
+#   FAMILYFLOW_APP_URL  bv. https://familieplanner.vercel.app  (geen trailing slash)
+#   CRON_SECRET          dezelfde waarde als CRON_SECRET in Vercel's env vars
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roep /api/cron/reminders aan
+        run: |
+          if [ -z "${{ secrets.FAMILYFLOW_APP_URL }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "FAMILYFLOW_APP_URL of CRON_SECRET ontbreekt als repository secret — sla over."
+            exit 0
+          fi
+          curl -sf -X POST "${{ secrets.FAMILYFLOW_APP_URL }}/api/cron/reminders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -w "\nHTTP %{http_code}\n"
