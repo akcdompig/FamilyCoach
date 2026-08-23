@@ -11,19 +11,22 @@ import { FlowAvatar } from "@/components/flow/FlowAvatar";
 import { FlowInsightCard } from "@/components/flow/FlowInsightCard";
 import { Icon } from "@/components/Icons";
 import { TaskCard } from "@/components/TaskCard";
+import { Avatar } from "@/components/ui/Avatar";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/Skeleton";
-import { Progress, Ring } from "@/components/ui/Progress";
+import { DualRing, Progress } from "@/components/ui/Progress";
+import { StarRating } from "@/components/ui/StarRating";
 import { useToast } from "@/components/ui/Toast";
 import { activeMessage, useCoachMoment } from "@/lib/coach/useCoach";
 import { useFlowRuntime } from "@/lib/flow/FlowRuntime";
-import { allowanceFor, badgeLabel, pointsSummary } from "@/lib/gamification";
+import { allowanceFor, badgeLabel, familyProgress, pointsSummary } from "@/lib/gamification";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { Mood } from "@/lib/types";
 import {
   addDays,
   checkInFor,
   children,
+  combinedAchievementFor,
   dateKey,
   GOAL_DOMAIN_ICON,
   goalDomain,
@@ -136,6 +139,10 @@ export default function ChildHome() {
   const myCheckIn = checkInFor(data, child.id);
   const points = pointsFor(data, child.id);
   const summary = pointsSummary(data, target.id);
+  const individualPct = withStatus.length > 0 ? Math.round((doneList.length / withStatus.length) * 100) : 0;
+  const family = familyProgress(data);
+  const familyPct = family.total > 0 ? Math.round((family.done / family.total) * 100) : 0;
+  const achievement = combinedAchievementFor(data, child.id);
   const wallet = allowanceFor(data, child);
   const activity = data.activities.find((item) => item.date === todayKey);
   const joinedActivity = Boolean(activity?.completedBy.includes(child.id));
@@ -176,41 +183,61 @@ export default function ChildHome() {
       <ConfettiBurst trigger={trigger} />
 
       <header className="mb-6">
-        <p className="text-sm capitalize text-muted">
-          {WEEKDAY_LONG[today.getDay()]} · {withStatus.length > 0 ? `${doneList.length}/${withStatus.length} klaar` : "vrije dag"}
-        </p>
-        <div className="mt-1 flex items-start justify-between gap-4">
-          <h1 className="font-display text-[30px] font-semibold leading-tight text-ink sm:text-[34px]">
-            {greeting()}, {child.name}
-          </h1>
+        <Card tone="hero" className="overflow-hidden">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm capitalize text-white/60">
+                {WEEKDAY_LONG[today.getDay()]} · {withStatus.length > 0 ? `${doneList.length}/${withStatus.length} klaar` : "vrije dag"}
+              </p>
+              <h1 className="mt-1 font-display text-[26px] font-semibold leading-tight text-white sm:text-[30px]">
+                {greeting()}, {child.name}
+              </h1>
+              <p className="mt-1 text-sm text-white/70">
+                {withStatus.length === 0
+                  ? "Vandaag staat er niets gepland. Fijne dag."
+                  : open.length === 0
+                    ? "Alles van vandaag staat af. Mooi."
+                    : `Nog ${open.length} ${open.length === 1 ? "ding" : "dingen"} vandaag. Je hoeft niet alles tegelijk.`}
+              </p>
+              <div className="mt-3">
+                <StarRating percentage={achievement} />
+              </div>
+            </div>
+            <Avatar name={child.name} color={child.color} avatarVariant={child.avatarVariant} size="lg" className="shrink-0" />
+          </div>
+
           {withStatus.length > 0 ? (
-            <div className="shrink-0 pt-1">
-              <Ring value={doneList.length} max={withStatus.length} tone="progress" size={52} />
+            <div className="mt-5 flex items-center gap-5">
+              <DualRing individual={individualPct} family={familyPct} max={100} size={104} />
+              <div className="min-w-0 space-y-2 text-sm">
+                <p className="flex items-center gap-1.5 text-white/80">
+                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
+                  Jouw bijdrage vandaag
+                </p>
+                <p className="flex items-center gap-1.5 text-white/60">
+                  <span className="h-2 w-2 rounded-full bg-white/55" />
+                  Gezinsscore vandaag
+                </p>
+              </div>
             </div>
           ) : null}
-        </div>
-        <p className="mt-1 text-sm text-muted">
-          {withStatus.length === 0
-            ? "Vandaag staat er niets gepland. Fijne dag."
-            : open.length === 0
-              ? "Alles van vandaag staat af. Mooi."
-              : `Nog ${open.length} ${open.length === 1 ? "ding" : "dingen"} vandaag. Je hoeft niet alles tegelijk.`}
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-sand-light px-3 py-1.5 text-sm">
-            <Icon name="flame" className="h-3.5 w-3.5 text-accent" />
-            <span className="font-mono font-semibold text-ink">{summary.streak}</span>
-            <span className="text-muted">{badgeLabel(data, child.id)}</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-light px-3 py-1.5 text-sm">
-            <span className="font-mono font-semibold text-ink">+{summary.today}</span>
-            <span className="text-muted">vandaag</span>
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm">
-            <span className="font-mono font-semibold text-ink">{points}</span>
-            <span className="text-muted">punten totaal</span>
-          </span>
-        </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
+              <Icon name="flame" className="h-3.5 w-3.5 text-accent" />
+              <span className="font-mono font-semibold text-white">{summary.streak}</span>
+              <span className="text-white/60">{badgeLabel(data, child.id)}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
+              <span className="font-mono font-semibold text-white">+{summary.today}</span>
+              <span className="text-white/60">vandaag</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
+              <span className="font-mono font-semibold text-white">{points}</span>
+              <span className="text-white/60">punten totaal</span>
+            </span>
+          </div>
+        </Card>
       </header>
 
       {suggestion ? (

@@ -11,14 +11,20 @@ const config: Config = {
         muted: "#726858",
         line: "#E8E1D3",
         primary: {
-          DEFAULT: "#2F6B52",
-          dark: "#1E4A37",
-          light: "#56917A",
+          DEFAULT: "#0E7C86",
+          dark: "#0B5A62",
+          light: "#35A0AA",
+        },
+        /** Donkere dashboard-ondergrond voor hero-kaarten (ring + sterren-samenvatting). */
+        navy: {
+          DEFAULT: "#0F2A3D",
+          dark: "#081722",
+          light: "#1D4159",
         },
         sage: {
-          DEFAULT: "#DCEAE1",
-          light: "#EEF6F1",
-          dark: "#C1DACE",
+          DEFAULT: "#DCEFF0",
+          light: "#EEF7F8",
+          dark: "#C1DEE0",
         },
         sand: {
           DEFAULT: "#EFE6D6",
@@ -26,20 +32,25 @@ const config: Config = {
         },
         /** "Energie": actie, voltooiing, "jouw beurt"-momenten. Donker genoeg voor 4.5:1 met witte tekst. */
         accent: {
-          DEFAULT: "#CA441C",
-          soft: "#FBE4D8",
-          dark: "#B23F1D",
+          DEFAULT: "#B84C0A",
+          soft: "#FDE7D6",
+          dark: "#913C08",
         },
         /** Uitsluitend voor doelen/groei-voortgang — nooit voor generieke acties. */
         progress: {
-          DEFAULT: "#1F6F63",
-          soft: "#E1EFEA",
-          dark: "#124F45",
+          DEFAULT: "#1A8E85",
+          soft: "#DFF3F1",
+          dark: "#136158",
         },
         danger: {
           DEFAULT: "#B0403A",
           soft: "#F5E1DE",
           dark: "#8A2F2A",
+        },
+        /** Sterren-waardering — alleen voor StarRating, nergens anders. Getest tegen wit én navy (>=3:1). */
+        star: {
+          DEFAULT: "#C2830A",
+          muted: "#9B927E",
         },
       },
       fontFamily: {

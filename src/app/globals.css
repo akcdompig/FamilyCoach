@@ -50,8 +50,8 @@
   .bg-atmosphere {
     @apply bg-paper;
     background-image:
-      radial-gradient(circle at 100% 0%, rgba(226, 88, 46, 0.032), transparent 40%),
-      radial-gradient(circle at 0% 100%, rgba(31, 111, 99, 0.028), transparent 36%);
+      radial-gradient(circle at 100% 0%, rgba(232, 96, 12, 0.032), transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(15, 42, 61, 0.036), transparent 36%);
     background-repeat: no-repeat;
   }
 

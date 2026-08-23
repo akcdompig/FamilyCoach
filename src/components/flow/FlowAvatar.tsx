@@ -18,13 +18,13 @@ interface Props {
 }
 
 const BODY_TONE: Record<FlowAvatarState, [string, string]> = {
-  idle: ["#DDEBE3", "#4C7A65"],
-  thinking: ["#EEF5F1", "#4C7A65"],
-  listening: ["#DDEBE3", "#315C4A"],
-  happy: ["#F7EAD1", "#C2913F"],
-  celebrating: ["#F7EAD1", "#C2913F"],
-  concerned: ["#F6F1E9", "#8A7B5C"],
-  coaching: ["#DDEBE3", "#315C4A"],
+  idle: ["#D9EEEC", "#0E7C86"],
+  thinking: ["#E9F6F5", "#0E7C86"],
+  listening: ["#D9EEEC", "#0B5A62"],
+  happy: ["#FCE3CC", "#B84C0A"],
+  celebrating: ["#FCE3CC", "#B84C0A"],
+  concerned: ["#E7ECEF", "#5B6B77"],
+  coaching: ["#D9EEEC", "#0B5A62"],
 };
 
 const BOUNCY: Transition = { type: "spring", stiffness: 260, damping: 14 };

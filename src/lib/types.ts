@@ -46,6 +46,8 @@ export interface Person {
   likes?: string;
   hard?: string;
   createdAt: string;
+  /** Sleutel in AVATAR_VARIANTS (bv. "child-m") — onbekend/ontbrekend geeft initialen-avatar. */
+  avatarVariant?: string;
 }
 
 export interface IntakeAnswers {

@@ -8,11 +8,14 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { FamilyMemberCard } from "@/components/FamilyMemberCard";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
+import { DualRing } from "@/components/ui/Progress";
+import { StarRating } from "@/components/ui/StarRating";
 import { activeMessage, useCoachMoment } from "@/lib/coach/useCoach";
 import { parentFocusSuggestion } from "@/lib/coach/rules";
+import { familyProgress } from "@/lib/gamification";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { Mood } from "@/lib/types";
-import { checkInFor, children, dateKey, dayProgress, greeting, pointsFor, weekStats } from "@/lib/utils";
+import { checkInFor, children, combinedAchievementFor, dateKey, dayProgress, greeting, pointsFor, weekStats } from "@/lib/utils";
 
 const MOOD_FROM_LABEL: Record<string, Mood> = {
   Goed: "good",
@@ -32,13 +35,41 @@ export default function ParentHome() {
   const stats = weekStats(data, kids.map((kid) => kid.id));
   const safetyConflicts = (data.conflicts ?? []).filter((c) => c.privacy === "SAFETY_RELEVANT");
 
+  const family = familyProgress(data);
+  const todayPct = family.total > 0 ? Math.round((family.done / family.total) * 100) : 0;
+  const weekPct = stats.tasksTotal > 0 ? Math.round((stats.tasksDone / stats.tasksTotal) * 100) : 0;
+  const familyAchievement = kids.length
+    ? Math.round(kids.reduce((sum, kid) => sum + combinedAchievementFor(data, kid.id), 0) / kids.length)
+    : 0;
+
   return (
     <AppShell role="parent">
       <header className="mb-6">
-        <p className="text-sm text-muted">{data.family.name}</p>
-        <h1 className="mt-1 text-[28px] font-semibold leading-tight text-ink">
-          {greeting()}, {activePerson.name} 👋
-        </h1>
+        <Card tone="hero" className="overflow-hidden">
+          <p className="text-sm text-white/60">{data.family.name}</p>
+          <h1 className="mt-1 font-display text-[26px] font-semibold leading-tight text-white sm:text-[30px]">
+            {greeting()}, {activePerson.name}
+          </h1>
+          <div className="mt-3">
+            <StarRating percentage={familyAchievement} />
+          </div>
+
+          {kids.length > 0 ? (
+            <div className="mt-5 flex items-center gap-5">
+              <DualRing individual={todayPct} family={weekPct} max={100} size={104} />
+              <div className="min-w-0 space-y-2 text-sm">
+                <p className="flex items-center gap-1.5 text-white/80">
+                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
+                  Vandaag
+                </p>
+                <p className="flex items-center gap-1.5 text-white/60">
+                  <span className="h-2 w-2 rounded-full bg-white/55" />
+                  Deze week
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </Card>
       </header>
 
       {safetyConflicts.length > 0 ? (

@@ -21,7 +21,8 @@ export type IconName =
   | "basket"
   | "chevron"
   | "flame"
-  | "chat";
+  | "chat"
+  | "star";
 
 const PATHS: Record<IconName, string> = {
   home: "M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z",
@@ -45,13 +46,14 @@ const PATHS: Record<IconName, string> = {
   chevron: "M6 9l6 6 6-6",
   flame: "M12 3c1.2 3-2.8 4.2-2.8 8.2a2.8 2.8 0 0 0 5.6 0c0-1.4-.9-1.9-.9-3.3 1.4.9 2.6 2.8 2.6 4.8A4.5 4.5 0 0 1 7 12.7C7 7.9 12 6 12 3z",
   chat: "M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9.5L6 18.5V15.5H6a2 2 0 0 1-2-2z",
+  star: "M12 3.5l2.5 5.4 5.9.6-4.4 4 1.2 5.9-5.2-3-5.2 3 1.2-5.9-4.4-4 5.9-.6z",
 };
 
-export function Icon({ name, className }: { name: IconName; className?: string }) {
+export function Icon({ name, className, filled }: { name: IconName; className?: string; filled?: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="1.6"
       strokeLinecap="round"

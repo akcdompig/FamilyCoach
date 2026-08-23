@@ -3,7 +3,7 @@ import { cx } from "@/lib/utils";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
-  tone?: "surface" | "sage" | "sand" | "accent" | "progress" | "outline";
+  tone?: "surface" | "sage" | "sand" | "accent" | "progress" | "outline" | "hero";
   padded?: boolean;
 }
 
@@ -14,6 +14,8 @@ const TONES = {
   accent: "bg-accent-soft border border-accent/20",
   progress: "bg-progress-soft border border-progress/20",
   outline: "bg-transparent border border-dashed border-line",
+  /** Donkere dashboard-samenvatting: ring + sterren-waardering (Today/Grow/Family-overzicht). */
+  hero: "bg-gradient-to-br from-navy-dark to-navy text-white border-none shadow-lift",
 };
 
 export function Card({ children, tone = "surface", padded = true, className, ...rest }: CardProps) {

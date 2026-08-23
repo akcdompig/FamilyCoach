@@ -9,11 +9,14 @@ import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
+import { DualRing } from "@/components/ui/Progress";
+import { StarRating } from "@/components/ui/StarRating";
 import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { AppData, Goal, GoalDomain } from "@/lib/types";
 import {
+  combinedAchievementFor,
   cx,
   dateKey,
   addDays,
@@ -353,6 +356,16 @@ function GoalsPageInner() {
   const achieved = filtered.filter((g) => goalAchieved(data, g));
   const myTasks = data.tasks.filter((t) => t.personId === person.id);
 
+  const achievement = combinedAchievementFor(data, person.id);
+  const personalGoals = myGoals.filter((g) => g.personId === person.id);
+  const sharedGoals = myGoals.filter((g) => !g.personId);
+  const avgPct = (goals: Goal[]) =>
+    goals.length
+      ? Math.round((goals.reduce((sum, g) => sum + Math.min(1, goalProgressFor(data, g) / Math.max(1, g.target)), 0) / goals.length) * 100)
+      : 0;
+  const personalPct = avgPct(personalGoals);
+  const sharedPct = avgPct(sharedGoals);
+
   function openCreate() {
     setEditingGoal(null);
     setDraft(emptyDraft());
@@ -389,18 +402,41 @@ function GoalsPageInner() {
 
   return (
     <AppShell role="child">
-      <header className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[28px] font-semibold leading-tight text-ink">Groei</h1>
-          <p className="mt-1 text-sm text-muted">
-            {tab === "doelen" ? `${points} punten verzameld` : "Kleine keuzes, goed gevoel."}
-          </p>
-        </div>
-        {tab === "doelen" ? (
-          <Button size="sm" onClick={openCreate}>
-            Nieuw doel
-          </Button>
-        ) : null}
+      <header className="mb-6">
+        <Card tone="hero" className="overflow-hidden">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="font-display text-[26px] font-semibold leading-tight text-white sm:text-[30px]">Groei</h1>
+              <p className="mt-1 text-sm text-white/70">
+                {tab === "doelen" ? `${points} punten verzameld` : "Kleine keuzes, goed gevoel."}
+              </p>
+              <div className="mt-3">
+                <StarRating percentage={achievement} />
+              </div>
+            </div>
+            {tab === "doelen" ? (
+              <Button size="sm" onClick={openCreate} className="shrink-0">
+                Nieuw doel
+              </Button>
+            ) : null}
+          </div>
+
+          {myGoals.length > 0 ? (
+            <div className="mt-5 flex items-center gap-5">
+              <DualRing individual={personalPct} family={sharedPct} max={100} size={104} />
+              <div className="min-w-0 space-y-2 text-sm">
+                <p className="flex items-center gap-1.5 text-white/80">
+                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
+                  Eigen doelen
+                </p>
+                <p className="flex items-center gap-1.5 text-white/60">
+                  <span className="h-2 w-2 rounded-full bg-white/55" />
+                  Gezinsdoelen
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </Card>
       </header>
 
       <Tabs tabs={TABS} active={tab} onChange={setTab} />

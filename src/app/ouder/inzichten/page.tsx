@@ -97,7 +97,7 @@ export default function InsightsPage() {
               <Card key={kid.id} className="flex items-center gap-4">
                 <div className="relative flex shrink-0 items-center justify-center">
                   <Ring value={kidStats.tasksDone} max={Math.max(kidStats.tasksTotal, 1)} size={52} tone="progress" />
-                  <Avatar name={kid.name} color={kid.color} size="sm" className="absolute" />
+                  <Avatar name={kid.name} color={kid.color} size="sm" className="absolute" avatarVariant={kid.avatarVariant} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">

@@ -35,6 +35,7 @@ export function createDemoData(): AppData {
       color: "#315C4A",
       interests: ["hardlopen", "koken"],
       createdAt: now(),
+      avatarVariant: "adult-m",
     },
     {
       id: vanessa,
@@ -44,6 +45,7 @@ export function createDemoData(): AppData {
       color: "#4C7A65",
       interests: ["wandelen"],
       createdAt: now(),
+      avatarVariant: "adult-f",
     },
     {
       id: laura,
@@ -57,6 +59,7 @@ export function createDemoData(): AppData {
       likes: "Voetbal met vriendinnen, muziek uitzoeken",
       hard: "Op tijd beginnen met huiswerk en omgaan met frustratie",
       createdAt: now(),
+      avatarVariant: "teen-f",
     },
     {
       id: milan,
@@ -70,6 +73,7 @@ export function createDemoData(): AppData {
       likes: "Gamen, voetballen met vrienden",
       hard: "Wachten op zijn beurt en dingen delen",
       createdAt: now(),
+      avatarVariant: "child-m",
     },
   ];
 

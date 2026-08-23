@@ -55,7 +55,7 @@ export function AppShell({ children, role }: Props) {
                 Wissel van gebruiker
               </label>
               <div className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pl-1 pr-2">
-                <Avatar name={activePerson.name} color={activePerson.color} size="sm" />
+                <Avatar name={activePerson.name} color={activePerson.color} size="sm" avatarVariant={activePerson.avatarVariant} />
                 <select
                   id="person-switch"
                   value={effectiveRole === "coach" ? "coach" : activePerson.id}

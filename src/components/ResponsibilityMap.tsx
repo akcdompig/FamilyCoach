@@ -53,7 +53,7 @@ export function ResponsibilityMap({ data, people, showStatus = false }: Props) {
               const done = showStatus && isDone(data, task.id);
               return (
                 <div key={task.id} className="flex items-center gap-2.5">
-                  {owner ? <Avatar name={owner.name} color={owner.color} size="sm" /> : null}
+                  {owner ? <Avatar name={owner.name} color={owner.color} size="sm" avatarVariant={owner.avatarVariant} /> : null}
                   <div className="min-w-0 flex-1">
                     <p className={cx("truncate text-sm font-medium", done ? "text-muted line-through" : "text-ink")}>
                       {task.title}

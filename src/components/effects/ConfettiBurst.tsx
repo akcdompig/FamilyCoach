@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const COLORS = ["#2F6B52", "#E2582E", "#1F6F63", "#F2946A", "#56917A", "#DCEAE1"];
+const COLORS = ["#0E7C86", "#B84C0A", "#1A8E85", "#F5B942", "#35A0AA", "#DCEFF0"];
 const PIECES = 26;
 
 /**

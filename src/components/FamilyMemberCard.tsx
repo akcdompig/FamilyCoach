@@ -31,6 +31,7 @@ export function FamilyMemberCard({ person, done, total, mood, points, href }: Pr
           color={person.color}
           size="sm"
           className="absolute"
+          avatarVariant={person.avatarVariant}
         />
       </div>
       <div className="min-w-0 flex-1">

@@ -25,7 +25,7 @@ export default function ChildProfilePage() {
   return (
     <AppShell>
       <header className="mb-6 flex items-center gap-4">
-        <Avatar name={person.name} color={person.color} size="lg" />
+        <Avatar name={person.name} color={person.color} size="lg" avatarVariant={person.avatarVariant} />
         <div>
           <h1 className="text-[26px] font-semibold leading-tight text-ink">{person.name}</h1>
           <p className="mt-0.5 text-sm text-muted">

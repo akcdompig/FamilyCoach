@@ -333,6 +333,38 @@ export function weekStats(data: AppData, personIds: string[], from: Date = new D
   return { tasksDone, tasksTotal, checkIns, movementDays: movementDays.size, activities };
 }
 
+/**
+ * Eén samengevoegd percentage (0-100) uit al bestaande, afgeleide cijfers —
+ * nooit een los opgeslagen score. Gewogen: vandaag-taken 50%, actieve
+ * doelen-voortgang 30%, reeks-gezondheid 20%. Gebruikt door StarRating.
+ */
+export function combinedAchievementFor(data: AppData, personId: string): number {
+  const { ratio: taskRatio, total: taskTotal } = dayProgress(data, personId);
+
+  const activeGoals = data.goals.filter((g) => (g.personId === personId || !g.personId) && g.target > 0);
+  const goalRatio = activeGoals.length
+    ? activeGoals.reduce((sum, g) => sum + Math.min(1, goalProgressFor(data, g) / g.target), 0) / activeGoals.length
+    : null;
+
+  const streakRatio = Math.min(1, streakDays(data, personId) / 7);
+
+  const parts: { ratio: number; weight: number }[] = [];
+  if (taskTotal > 0) parts.push({ ratio: taskRatio, weight: 0.5 });
+  if (goalRatio !== null) parts.push({ ratio: goalRatio, weight: 0.3 });
+  parts.push({ ratio: streakRatio, weight: 0.2 });
+
+  const totalWeight = parts.reduce((sum, p) => sum + p.weight, 0);
+  if (totalWeight === 0) return 0;
+  const weighted = parts.reduce((sum, p) => sum + p.ratio * p.weight, 0) / totalWeight;
+  return Math.round(weighted * 100);
+}
+
+/** 0-100% -> 1-5 sterren. Elke echte voortgang telt voor minstens één ster; pas op 0% blijft het 0. */
+export function starsFor(percentage: number): number {
+  if (percentage <= 0) return 0;
+  return Math.max(1, Math.round((percentage / 100) * 5));
+}
+
 export function children(data: AppData): Person[] {
   return data.people.filter((p) => p.role === "child");
 }
