@@ -80,6 +80,9 @@ export function fallbackCoachMessage(kind: MessageKind, context: CoachContext): 
           context.streakDays > 2
             ? `${context.streakDays} dagen op rij goed op gang. Dat is een patroon aan het worden.`
             : "Je hebt je afspraken van vandaag rond. Goed bezig.",
+          context.nearestGoal
+            ? `Alles rond, en je doel "${context.nearestGoal.title}" staat op ${context.nearestGoal.progress}/${context.nearestGoal.target}. Mooi tempo.`
+            : "Je hebt je afspraken van vandaag rond. Goed bezig.",
         ],
         seed,
       );
@@ -91,6 +94,9 @@ export function fallbackCoachMessage(kind: MessageKind, context: CoachContext): 
           `Nog één ding open: ${first}. Daarna is je tijd van jou, ook voor ${interest}.`,
           `Zet ${interest} aan en doe ondertussen ${first}. Klaar voor je het doorhebt.`,
           `Klein plan: eerst ${first}, daarna ${interest}.`,
+          context.nearestGoal
+            ? `Eerst ${first}, dat brengt je ook dichter bij "${context.nearestGoal.title}".`
+            : `Klein plan: eerst ${first}, daarna ${interest}.`,
         ],
         seed,
       );

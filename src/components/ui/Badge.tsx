@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 import { cx } from "@/lib/utils";
 
-type Tone = "neutral" | "green" | "accent" | "muted";
+type Tone = "neutral" | "green" | "accent" | "progress" | "danger" | "muted";
 
 const TONES: Record<Tone, string> = {
   neutral: "bg-sage-light text-primary-dark",
   green: "bg-sage text-primary-dark",
   accent: "bg-accent-soft text-accent-dark",
+  progress: "bg-progress-soft text-progress-dark",
+  danger: "bg-danger-soft text-danger-dark",
   muted: "bg-paper text-muted border border-line",
 };
 

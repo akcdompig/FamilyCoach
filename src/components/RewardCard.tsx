@@ -9,11 +9,12 @@ interface Props {
   reward: Reward;
   points: number;
   onRedeem?: () => void;
-  redeemed?: boolean;
+  status?: "aangevraagd" | "goedgekeurd";
 }
 
-export function RewardCard({ reward, points, onRedeem, redeemed }: Props) {
+export function RewardCard({ reward, points, onRedeem, status }: Props) {
   const affordable = points >= reward.cost;
+
   return (
     <div className="rounded-3xl border border-line/80 bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
@@ -23,18 +24,30 @@ export function RewardCard({ reward, points, onRedeem, redeemed }: Props) {
         </div>
         <Badge tone={affordable ? "accent" : "muted"}>{reward.cost} punten</Badge>
       </div>
-      <Progress value={Math.min(points, reward.cost)} max={reward.cost} tone="accent" className="mt-3" />
+
+      {/* Een balk heeft alleen betekenis als er nog iets te overbruggen valt. */}
+      {!affordable && !status ? (
+        <Progress value={points} max={reward.cost} tone="accent" className="mt-3" />
+      ) : null}
+
       <div className="mt-3 flex items-center justify-between">
         <p className="text-sm text-muted">
-          {redeemed
-            ? "Aangevraagd"
-            : affordable
-              ? "Je kunt deze kiezen"
-              : `Nog ${reward.cost - points} punten`}
+          {status === "goedgekeurd"
+            ? "Goedgekeurd door je ouder"
+            : status === "aangevraagd"
+              ? "In afwachting van je ouder"
+              : affordable
+                ? "Je kunt deze kiezen"
+                : `Nog ${reward.cost - points} punten`}
         </p>
         {onRedeem ? (
-          <Button size="sm" variant={affordable ? "primary" : "secondary"} disabled={!affordable || redeemed} onClick={onRedeem}>
-            {redeemed ? "Aangevraagd" : "Kiezen"}
+          <Button
+            size="sm"
+            variant={status === "goedgekeurd" ? "soft" : affordable ? "primary" : "secondary"}
+            disabled={!affordable || Boolean(status)}
+            onClick={onRedeem}
+          >
+            {status === "goedgekeurd" ? "Ontvangen" : status === "aangevraagd" ? "Aangevraagd" : "Kiezen"}
           </Button>
         ) : null}
       </div>

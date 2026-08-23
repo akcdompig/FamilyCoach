@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/Progress";
 import { Tabs } from "@/components/ui/Tabs";
 import { useToast } from "@/components/ui/Toast";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
+import type { WalletEntry } from "@/lib/types";
 import { children, pointsFor } from "@/lib/utils";
 import { formatEuro, walletFor } from "@/lib/wallet";
 
@@ -16,6 +17,12 @@ const TABS = [
   { id: "zakgeld", label: "Zakgeld" },
   { id: "beloningen", label: "Beloningen" },
 ];
+
+const STATUS_LABEL: Record<WalletEntry["status"], string> = {
+  earned: "Verdiend",
+  paid: "Uitgekeerd",
+  expected: "Verwacht",
+};
 
 export default function WalletPage() {
   const { data, activePerson, redeemReward } = useFamilyFlow();
@@ -45,12 +52,14 @@ export default function WalletPage() {
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-sm text-muted">Deze week verdiend</p>
-                <p className="mt-1 text-4xl font-semibold text-ink">{formatEuro(wallet.earned)}</p>
+                <p className="mt-1 font-mono text-4xl font-semibold tabular-nums text-ink">
+                  {formatEuro(wallet.earned)}
+                </p>
               </div>
               <span className="text-4xl">💰</span>
             </div>
             <Progress value={wallet.earned} max={wallet.maximum} tone="accent" className="mt-5" />
-            <div className="mt-3 flex justify-between text-sm text-muted">
+            <div className="mt-3 flex justify-between font-mono text-sm tabular-nums text-muted">
               <span>Verwacht: {formatEuro(wallet.expected)}</span>
               <span>Max: {formatEuro(wallet.maximum)}</span>
             </div>
@@ -63,13 +72,11 @@ export default function WalletPage() {
                   <Card key={entry.id} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-ink">{entry.label}</p>
-                      <p className="mt-1 text-sm text-muted">
-                        {entry.status === "earned" ? "Verdiend" : entry.status === "paid" ? "Uitgekeerd" : "Verwacht"}
-                      </p>
+                      <p className="mt-1 text-sm text-muted">{STATUS_LABEL[entry.status]}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-ink">+{formatEuro(entry.amount)}</p>
-                      <Badge tone={entry.status === "earned" ? "green" : "muted"}>{entry.status}</Badge>
+                      <p className="font-mono font-semibold tabular-nums text-ink">+{formatEuro(entry.amount)}</p>
+                      <Badge tone={entry.status === "earned" ? "green" : "muted"}>{STATUS_LABEL[entry.status]}</Badge>
                     </div>
                   </Card>
                 ))
@@ -96,15 +103,15 @@ export default function WalletPage() {
           <SectionTitle>{points} punten verzameld</SectionTitle>
           <div className="space-y-3">
             {data.rewards.map((reward) => {
-              const redeemed = data.redemptions.some(
-                (redemption) => redemption.rewardId === reward.id && redemption.personId === person.id,
+              const redemption = data.redemptions.find(
+                (r) => r.rewardId === reward.id && r.personId === person.id,
               );
               return (
                 <RewardCard
                   key={reward.id}
                   reward={reward}
                   points={points}
-                  redeemed={redeemed}
+                  status={redemption?.status}
                   onRedeem={() => {
                     redeemReward(reward.id, person.id);
                     toast("Aangevraagd", "Je ouder ziet dit terug in het gezinsoverzicht.");

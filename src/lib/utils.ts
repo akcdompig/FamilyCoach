@@ -1,4 +1,5 @@
-import type { AppData, Category, Mood, Person, Task } from "@/lib/types";
+import type { AppData, Category, Goal, GoalDomain, GoalMilestone, Mood, Person, Task, TaskAdjustment } from "@/lib/types";
+import type { IconName } from "@/components/Icons";
 
 export function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
@@ -56,10 +57,208 @@ export function isTaskOnDay(task: Task, date: Date): boolean {
   return task.active && task.days.includes(date.getDay());
 }
 
+export function adjustmentFor(
+  data: AppData,
+  taskId: string,
+  personId: string,
+  date: Date = new Date(),
+): TaskAdjustment | undefined {
+  const key = dateKey(date);
+  return (data.taskAdjustments ?? []).find(
+    (a) => a.taskId === taskId && a.personId === personId && a.date === key,
+  );
+}
+
+/**
+ * Een afspraak telt voor vandaag mee tenzij hij voor vandaag is verplaatst of
+ * overgeslagen ("Replan, don't fail") — dit is de enige plek waar dat wordt
+ * bepaald, dus streaks/inzichten/oudersweergaven erven het automatisch.
+ */
 export function tasksForPerson(data: AppData, personId: string, date: Date = new Date()): Task[] {
+  const key = dateKey(date);
+  const movedAway = new Set(
+    (data.taskAdjustments ?? [])
+      .filter((a) => a.personId === personId && a.date === key && a.action)
+      .map((a) => a.taskId),
+  );
   return data.tasks
-    .filter((t) => t.personId === personId && isTaskOnDay(t, date))
+    .filter((t) => t.personId === personId && isTaskOnDay(t, date) && !movedAway.has(t.id))
     .sort((a, b) => minutesFromString(a.time ?? "23:59") - minutesFromString(b.time ?? "23:59"));
+}
+
+/** Afspraken die vanaf een andere dag hierheen zijn verplaatst — de andere helft van "Replan, don't fail". */
+export function movedInTasks(data: AppData, personId: string, date: Date = new Date()): Task[] {
+  const key = dateKey(date);
+  const incomingIds = new Set(
+    (data.taskAdjustments ?? [])
+      .filter((a) => a.personId === personId && a.action === "postponed" && a.movedToDate === key)
+      .map((a) => a.taskId),
+  );
+  if (incomingIds.size === 0) return [];
+  return data.tasks.filter((t) => incomingIds.has(t.id));
+}
+
+export function taskPriorityFor(
+  data: AppData,
+  taskId: string,
+  personId: string,
+  date: Date = new Date(),
+): "high" | "normal" {
+  return adjustmentFor(data, taskId, personId, date)?.priority === "high" ? "high" : "normal";
+}
+
+export function minutesNow(date: Date = new Date()): number {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
+export function startOfWeek(date: Date = new Date()): Date {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  const day = copy.getDay(); // 0 = zondag
+  const diff = day === 0 ? -6 : 1 - day; // maandag als eerste dag van de week
+  copy.setDate(copy.getDate() + diff);
+  return copy;
+}
+
+export function startOfMonth(date: Date = new Date()): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+export function daysInMonth(date: Date = new Date()): number {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+}
+
+export type OccurrenceStatus =
+  | "completed"
+  | "overdue"
+  | "today"
+  | "postponed"
+  | "moved-in"
+  | "upcoming"
+  | "past";
+
+export interface TaskOccurrence {
+  task: Task;
+  date: string;
+  status: OccurrenceStatus;
+  priority: "high" | "normal";
+}
+
+/**
+ * Alle voorkomens van iemands afspraken op één dag — inclusief verplaatste en
+ * overgeslagen exemplaren, in tegenstelling tot tasksForPerson (dat alleen
+ * teruggeeft "wat er nu nog moet"). Bedoeld voor de Plan-ervaring, waar
+ * eerlijk laten zien wat er is gebeurd meer waard is dan een schone lijst.
+ */
+export function occurrencesForDay(data: AppData, personId: string, date: Date): TaskOccurrence[] {
+  const key = dateKey(date);
+  const todayKey = dateKey(new Date());
+  const isToday = key === todayKey;
+  const isFuture = key > todayKey;
+  const nowMinutes = minutesNow();
+
+  const rows: TaskOccurrence[] = [];
+
+  for (const task of data.tasks) {
+    if (task.personId !== personId || !isTaskOnDay(task, date)) continue;
+    const adjustment = adjustmentFor(data, task.id, personId, date);
+    const done = isDone(data, task.id, date);
+    const priority: "high" | "normal" = adjustment?.priority === "high" ? "high" : "normal";
+
+    if (done) {
+      rows.push({ task, date: key, status: "completed", priority });
+      continue;
+    }
+    if (adjustment?.action === "postponed" || adjustment?.action === "skipped") {
+      rows.push({ task, date: key, status: "postponed", priority: "normal" });
+      continue;
+    }
+    if (isToday) {
+      const overdue = Boolean(task.time) && minutesFromString(task.time as string) < nowMinutes;
+      rows.push({ task, date: key, status: overdue ? "overdue" : "today", priority });
+    } else if (isFuture) {
+      rows.push({ task, date: key, status: "upcoming", priority });
+    } else {
+      rows.push({ task, date: key, status: "past", priority: "normal" });
+    }
+  }
+
+  for (const task of movedInTasks(data, personId, date)) {
+    if (rows.some((r) => r.task.id === task.id)) continue;
+    const done = isDone(data, task.id, date);
+    rows.push({ task, date: key, status: done ? "completed" : "moved-in", priority: "normal" });
+  }
+
+  return rows.sort((a, b) => minutesFromString(a.task.time ?? "23:59") - minutesFromString(b.task.time ?? "23:59"));
+}
+
+export function occurrencesForRange(data: AppData, personId: string, days: Date[]): TaskOccurrence[][] {
+  return days.map((day) => occurrencesForDay(data, personId, day));
+}
+
+export const GOAL_DOMAIN_LABEL: Record<GoalDomain, string> = {
+  health: "Gezondheid",
+  school: "School & leren",
+  skills: "Vaardigheden",
+  relationships: "Relaties",
+  responsibility: "Verantwoordelijkheid",
+  personal: "Persoonlijke groei",
+};
+
+export const GOAL_DOMAIN_ICON: Record<GoalDomain, IconName> = {
+  health: "activity",
+  school: "backpack",
+  skills: "spark",
+  relationships: "heart",
+  responsibility: "shield",
+  personal: "target",
+};
+
+export function goalDomain(goal: Goal): GoalDomain {
+  return goal.domain ?? "personal";
+}
+
+/**
+ * De echte voortgang van een doel. Bij gekoppelde afspraken (linkedTaskIds)
+ * is dit volledig afgeleid uit voltooiingen — nooit de losstaande, mogelijk
+ * verouderde progress-waarde — zodat een afspraak die je afrondt altijd en
+ * overal hetzelfde doel vooruit helpt. Zonder koppeling blijft progress de
+ * (handmatig bijgewerkte) bron van waarheid.
+ */
+export function goalProgressFor(data: AppData, goal: Goal): number {
+  if (!goal.linkedTaskIds || goal.linkedTaskIds.length === 0) {
+    return Math.min(goal.progress, goal.target);
+  }
+  const since = dateKey(new Date(goal.createdAt));
+  const linked = new Set(goal.linkedTaskIds);
+  const qualifyingDays = new Set(
+    data.completions
+      .filter((c) => linked.has(c.taskId) && c.date >= since)
+      .filter((c) => !goal.personId || c.personId === goal.personId)
+      .map((c) => c.date),
+  );
+  return Math.min(qualifyingDays.size, goal.target);
+}
+
+export function goalAchieved(data: AppData, goal: Goal): boolean {
+  return goal.target > 0 && goalProgressFor(data, goal) >= goal.target;
+}
+
+/** Mijlpalen om een doel te tonen als reis in plaats van één balk — eigen mijlpalen winnen, anders gelijk verdeeld over target. */
+export function milestonesFor(goal: Goal): GoalMilestone[] {
+  if (goal.milestones && goal.milestones.length > 0) return goal.milestones;
+  const count = Math.min(4, Math.max(1, Math.round(goal.target)));
+  const step = goal.target / count;
+  return Array.from({ length: count }, (_, i) => ({
+    id: `auto-${i}`,
+    label: i === count - 1 ? "Doel bereikt" : `Mijlpaal ${i + 1}`,
+    threshold: Math.round(step * (i + 1)),
+  }));
+}
+
+/** Welke doelen een specifieke afspraak vooruit helpt — voor de "+1 richtingje doel"-feedback bij afronden. */
+export function goalsLinkedToTask(data: AppData, taskId: string): Goal[] {
+  return data.goals.filter((g) => g.linkedTaskIds?.includes(taskId));
 }
 
 export function isDone(data: AppData, taskId: string, date: Date = new Date()): boolean {
@@ -87,7 +286,7 @@ export function pointsFor(data: AppData, personId: string): number {
     .filter((a) => a.completedBy.includes(personId))
     .reduce((sum, a) => sum + a.points, 0);
   const goalPoints = data.goals
-    .filter((g) => (g.personId === personId || !g.personId) && g.progress >= g.target)
+    .filter((g) => (g.personId === personId || !g.personId) && goalAchieved(data, g))
     .reduce((sum, g) => sum + g.points, 0);
   const spent = data.redemptions
     .filter((r) => r.personId === personId)
@@ -158,16 +357,17 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   samen: "Samen",
 };
 
-export const CATEGORY_ICON: Record<Category, string> = {
-  ochtend: "☀️",
-  school: "🎒",
-  beweging: "🏃",
-  wellness: "💧",
-  lezen: "📖",
-  scherm: "📱",
-  avond: "🌙",
-  huishouden: "🧺",
-  samen: "🧡",
+/** FamilyFlow-iconenset per categorie — bewust geen emoji, zie Icons.tsx. */
+export const CATEGORY_ICON: Record<Category, IconName> = {
+  ochtend: "sun",
+  school: "backpack",
+  beweging: "activity",
+  wellness: "droplet",
+  lezen: "book",
+  scherm: "device",
+  avond: "moon",
+  huishouden: "basket",
+  samen: "heart",
 };
 
 export const MOOD_LABEL: Record<Mood, string> = {

@@ -14,6 +14,7 @@ import {
 } from "@/lib/ai/conversation";
 import { FLOW_REGISTRY } from "@/lib/ai/flows";
 import { checkNoActivity, findDueFollowUp, findDueReminder, findPendingActivity } from "@/lib/ai/agent";
+import { computeFlowInsight, type FlowInsight } from "@/lib/ai/insights";
 import { appendCoachEvent } from "@/lib/coach/events";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { AppData, ConversationFlowId, ConversationSession, Person } from "@/lib/types";
@@ -85,6 +86,8 @@ interface FlowRuntimeValue {
   busy: boolean;
   error: string | null;
   suggestion: FlowSuggestion | null;
+  insight: FlowInsight | null;
+  dismissInsight: () => void;
   providerStatus: ProviderStatus | null;
   startFlow: (flowId: ConversationFlowId, meta?: Record<string, string>, entryStepId?: string) => Promise<void>;
   submit: (input: string, displayLabel?: string) => Promise<void>;
@@ -156,6 +159,17 @@ export function FlowRuntimeProvider({ children }: { children: ReactNode }) {
 
     return null;
   }, [data, activePerson]);
+
+  // Alleen tonen als er geen urgentere gespreks-suggestie actief is — één moment per keer.
+  const insight = useMemo<FlowInsight | null>(() => {
+    if (suggestion) return null;
+    return computeFlowInsight(data, activePerson);
+  }, [data, activePerson, suggestion]);
+
+  const dismissInsight = useCallback(() => {
+    if (!insight) return;
+    familyFlow.update((d) => void appendCoachEvent(d, { personId: activePerson.id, type: insight.id }));
+  }, [insight, familyFlow, activePerson.id]);
 
   const startFlow = useCallback(
     async (flowId: ConversationFlowId, meta: Record<string, string> = {}, entryStepId?: string) => {
@@ -263,8 +277,38 @@ export function FlowRuntimeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<FlowRuntimeValue>(
-    () => ({ open, openPanel, closePanel, session, render, busy, error, suggestion, providerStatus, startFlow, submit, endSession }),
-    [open, openPanel, closePanel, session, render, busy, error, suggestion, providerStatus, startFlow, submit, endSession],
+    () => ({
+      open,
+      openPanel,
+      closePanel,
+      session,
+      render,
+      busy,
+      error,
+      suggestion,
+      insight,
+      dismissInsight,
+      providerStatus,
+      startFlow,
+      submit,
+      endSession,
+    }),
+    [
+      open,
+      openPanel,
+      closePanel,
+      session,
+      render,
+      busy,
+      error,
+      suggestion,
+      insight,
+      dismissInsight,
+      providerStatus,
+      startFlow,
+      submit,
+      endSession,
+    ],
   );
 
   return <FlowRuntimeContext.Provider value={value}>{children}</FlowRuntimeContext.Provider>;

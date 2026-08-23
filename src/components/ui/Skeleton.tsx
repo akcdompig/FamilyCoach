@@ -5,7 +5,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cx(
-        "animate-shimmer rounded-2xl bg-[linear-gradient(90deg,#EFF1EC_0%,#F7F8F5_50%,#EFF1EC_100%)] bg-[length:800px_100%]",
+        "animate-shimmer rounded-2xl bg-[linear-gradient(90deg,#EFE9DC_0%,#FBF9F4_50%,#EFE9DC_100%)] bg-[length:800px_100%]",
         className,
       )}
       aria-hidden
@@ -22,7 +22,7 @@ export function EmptyState({
   title: string;
   description: string;
   action?: ReactNode;
-  icon?: string;
+  icon?: ReactNode;
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-line bg-surface/60 px-6 py-10 text-center">

@@ -77,12 +77,12 @@ export function PushOptIn({ person }: { person: Person }) {
             : "Zet aan om herinneringen te krijgen, ook als de app dicht is."}
         </p>
         {permission === "denied" ? (
-          <p className="mt-2 text-xs text-[#9B3B2F]">
+          <p className="mt-2 text-xs text-danger">
             Meldingen staan uit voor deze site in je browserinstellingen. Zet ze daar eerst weer aan.
           </p>
         ) : null}
         {status === "error" && permission !== "denied" ? (
-          <p className="mt-2 text-xs text-[#9B3B2F]">Dat lukte niet. Probeer het nog eens.</p>
+          <p className="mt-2 text-xs text-danger">Dat lukte niet. Probeer het nog eens.</p>
         ) : null}
         <Button
           size="sm"

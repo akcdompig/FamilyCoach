@@ -21,6 +21,11 @@ export function familySkillsFor(data: AppData, personId: string): number {
     .reduce((total, event) => total + event.points, 0);
 }
 
+/** Gezinsbreed totaal — het gedeelde gedrag dat het hele gezin samen heeft opgebouwd, niet per persoon. */
+export function familySkillsTotal(data: AppData): number {
+  return (data.familySkillEvents ?? []).reduce((total, event) => total + event.points, 0);
+}
+
 export function awardFamilySkill(
   data: AppData,
   personId: string,

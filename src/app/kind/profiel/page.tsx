@@ -38,15 +38,15 @@ export default function ChildProfilePage() {
       <Card>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-semibold text-ink">{pointsFor(data, person.id)}</p>
+            <p className="font-mono text-2xl font-semibold tabular-nums text-ink">{pointsFor(data, person.id)}</p>
             <p className="mt-1 text-xs uppercase tracking-wider text-muted">Punten</p>
           </div>
           <div>
-            <p className="text-2xl font-semibold text-ink">{streakDays(data, person.id)}</p>
+            <p className="font-mono text-2xl font-semibold tabular-nums text-ink">{streakDays(data, person.id)}</p>
             <p className="mt-1 text-xs uppercase tracking-wider text-muted">Dagen op rij</p>
           </div>
           <div>
-            <p className="text-2xl font-semibold text-ink">
+            <p className="font-mono text-2xl font-semibold tabular-nums text-ink">
               {stats.tasksDone}/{stats.tasksTotal}
             </p>
             <p className="mt-1 text-xs uppercase tracking-wider text-muted">Deze week</p>

@@ -6,7 +6,9 @@ import {
   children,
   dateKey,
   dayProgress,
+  goalProgressFor,
   isDone,
+  movedInTasks,
   partOfDay,
   streakDays,
   tasksForPerson,
@@ -54,7 +56,27 @@ export function buildCoachContext(
     recentMoods,
     streakDays: streakDays(data, person.id, now),
     lastMessages: recentMessageBodies(data, person.id, 3),
+    tomorrowCount: (() => {
+      const tomorrow = addDays(now, 1);
+      const scheduled = tasksForPerson(data, person.id, tomorrow);
+      const incoming = movedInTasks(data, person.id, tomorrow);
+      return scheduled.length + incoming.length;
+    })(),
   };
+
+  if (person.role === "child") {
+    const openGoal = data.goals
+      .filter((g) => (!g.personId || g.personId === person.id) && goalProgressFor(data, g) < g.target)
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+    if (openGoal) {
+      base.nearestGoal = {
+        title: openGoal.title,
+        progress: goalProgressFor(data, openGoal),
+        target: openGoal.target,
+        unit: openGoal.unit,
+      };
+    }
+  }
 
   if (person.role !== "child") {
     base.childSummaries = children(data).map((child) => {

@@ -18,8 +18,12 @@ export interface OverviewIndicator {
   note: string;
 }
 
-const DOT: Record<TrafficLight, string> = { green: "🟢", amber: "🟡", orange: "🟠" };
-export const TRAFFIC_DOT = DOT;
+/** Tailwind-kleurklasse per niveau — bewust geen emoji, zie de FamilyFlow-iconenset/kleursysteem. */
+export const TRAFFIC_COLOR: Record<TrafficLight, string> = {
+  green: "bg-primary",
+  amber: "bg-accent",
+  orange: "bg-danger",
+};
 
 function levelFromRatio(ratio: number | null): TrafficLight {
   if (ratio === null) return "amber";

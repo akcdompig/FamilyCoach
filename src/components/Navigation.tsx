@@ -22,7 +22,7 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
   ],
   child: [
     { href: "/kind", label: "Home", icon: "home" },
-    { href: "/kind/vandaag", label: "Vandaag", icon: "sun" },
+    { href: "/kind/plan", label: "Plan", icon: "sun" },
     { href: "/kind/samen", label: "Samen", icon: "heart" },
     { href: "/kind/doelen", label: "Groei", icon: "target" },
     { href: "/kind/wallet", label: "Wallet", icon: "spark" },
@@ -90,7 +90,7 @@ export function SideNavigation({
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-surface px-4 py-6 md:flex">
       <div className="px-3">
-        <p className="text-lg font-semibold tracking-tight text-ink">FamilyFlow</p>
+        <p className="font-display text-lg font-semibold tracking-tight text-ink">FamilyFlow</p>
         <div className="mt-0.5 flex items-center gap-2">
           <p className="text-sm text-muted">{familyName}</p>
           {isDemo ? (

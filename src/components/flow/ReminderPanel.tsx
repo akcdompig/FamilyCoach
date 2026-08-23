@@ -52,7 +52,7 @@ export function ReminderPanel({ person }: { person: Person }) {
               <button
                 type="button"
                 onClick={() => removeReminder(reminder.id)}
-                className="shrink-0 text-xs text-muted hover:text-[#9B3B2F]"
+                className="shrink-0 text-xs text-muted hover:text-danger"
               >
                 Verwijderen
               </button>

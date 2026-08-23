@@ -106,6 +106,24 @@ export type VerificationStatus =
   | "EVIDENCE_ATTACHED"
   | "INTEGRATION_VERIFIED";
 
+export type TaskAdjustmentAction = "postponed" | "skipped";
+
+/**
+ * Per-dag aanpassing op een terugkerende afspraak — het "Replan, don't fail"
+ * mechanisme. Verandert nooit de Task zelf, alleen wat er voor één
+ * specifieke dag geldt. Zonder record: gewoon de normale terugkerende dag.
+ */
+export interface TaskAdjustment {
+  id: string;
+  taskId: string;
+  personId: string;
+  date: string; // YYYY-MM-DD, de oorspronkelijk geplande dag
+  action?: TaskAdjustmentAction;
+  movedToDate?: string; // vereist wanneer action === "postponed"
+  priority?: "high";
+  createdAt: string;
+}
+
 export type WellnessKind = "water" | "fruit" | "breakfast" | "movement" | "reading" | "teeth";
 
 export interface WellnessLog {
@@ -306,16 +324,43 @@ export interface CheckIn {
   createdAt: string;
 }
 
+export type GoalDomain = "health" | "school" | "skills" | "relationships" | "responsibility" | "personal";
+
+export interface GoalMilestone {
+  id: string;
+  label: string;
+  threshold: number; // zelfde schaal als target
+}
+
+/** Klein reflectiemoment op een doel — geen dagboek, gewoon "hoe gaat dit eigenlijk". */
+export interface GoalReflection {
+  id: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Goal {
   id: string;
   familyId: string;
   personId?: string; // leeg = gezinsdoel
   title: string;
+  domain?: GoalDomain; // ontbreekt bij oudere data — behandel dan als "personal"
   target: number;
+  unit?: string; // bv. "dagen", "keer", "boeken" — maakt het cijfer leesbaar
+  /**
+   * Basiswaarde. Bij een doel met linkedTaskIds is dit niet de bron van
+   * waarheid — de effectieve voortgang wordt afgeleid uit echte afronding
+   * van de gekoppelde afspraken, zie goalProgressFor() in lib/utils.ts.
+   */
   progress: number;
   points: number;
   dueDate: string;
   createdAt: string;
+  /** Afspraken die, wanneer afgerond, dit doel automatisch vooruit helpen. */
+  linkedTaskIds?: string[];
+  /** Optioneel eigen mijlpalen; zonder opgave worden ze afgeleid van target, zie milestonesFor(). */
+  milestones?: GoalMilestone[];
+  reflections?: GoalReflection[];
 }
 
 export type RewardType = "tijd" | "activiteit" | "autonomie" | "materieel";
@@ -417,6 +462,7 @@ export interface AppData {
   pendingActivities?: PendingActivity[];
   reminders?: Reminder[];
   pushSubscriptions?: PushSubscriptionRecord[];
+  taskAdjustments?: TaskAdjustment[];
 }
 
 /* --------------------------------------------------------------------- */
@@ -517,4 +563,8 @@ export interface CoachContext {
   weekStats?: { tasksDone: number; tasksTotal: number; checkIns: number; movementDays: number; activities: number };
   memoryFacts?: string[];
   simplifiedMode?: boolean;
+  /** Dichtstbijzijnde nog niet behaalde doel — zodat Flow ook over groei kan praten, niet alleen over taken. */
+  nearestGoal?: { title: string; progress: number; target: number; unit?: string };
+  /** Aantal geplande afspraken morgen — voor vooruitkijkende momenten ("morgen wordt druk"). */
+  tomorrowCount: number;
 }

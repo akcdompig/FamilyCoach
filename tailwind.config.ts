@@ -5,33 +5,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#F7F7F3",
+        paper: "#F8F6F1",
         surface: "#FFFFFF",
-        ink: "#1D2923",
-        muted: "#6E7973",
-        line: "#E7E9E3",
+        ink: "#201C1A",
+        muted: "#726858",
+        line: "#E8E1D3",
         primary: {
-          DEFAULT: "#315C4A",
-          dark: "#24463A",
-          light: "#4C7A65",
+          DEFAULT: "#2F6B52",
+          dark: "#1E4A37",
+          light: "#56917A",
         },
         sage: {
-          DEFAULT: "#DDEBE3",
-          light: "#EEF5F1",
-          dark: "#C6DCD0",
+          DEFAULT: "#DCEAE1",
+          light: "#EEF6F1",
+          dark: "#C1DACE",
         },
         sand: {
-          DEFAULT: "#EFE7DA",
-          light: "#F6F1E9",
+          DEFAULT: "#EFE6D6",
+          light: "#F7F1E6",
         },
+        /** "Energie": actie, voltooiing, "jouw beurt"-momenten. Donker genoeg voor 4.5:1 met witte tekst. */
         accent: {
-          DEFAULT: "#E5B96A",
-          soft: "#F7EAD1",
-          dark: "#C2913F",
+          DEFAULT: "#CA441C",
+          soft: "#FBE4D8",
+          dark: "#B23F1D",
+        },
+        /** Uitsluitend voor doelen/groei-voortgang — nooit voor generieke acties. */
+        progress: {
+          DEFAULT: "#1F6F63",
+          soft: "#E1EFEA",
+          dark: "#124F45",
+        },
+        danger: {
+          DEFAULT: "#B0403A",
+          soft: "#F5E1DE",
+          dark: "#8A2F2A",
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sora)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-sora)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       borderRadius: {
         xl: "1rem",
@@ -39,8 +53,8 @@ const config: Config = {
         "3xl": "1.75rem",
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(29,41,35,0.04), 0 10px 30px -18px rgba(29,41,35,0.25)",
-        lift: "0 2px 6px rgba(29,41,35,0.05), 0 20px 44px -20px rgba(29,41,35,0.28)",
+        soft: "0 1px 2px rgba(32,28,26,0.04), 0 10px 30px -18px rgba(32,28,26,0.25)",
+        lift: "0 2px 6px rgba(32,28,26,0.05), 0 20px 44px -20px rgba(32,28,26,0.28)",
       },
       keyframes: {
         "fade-up": {

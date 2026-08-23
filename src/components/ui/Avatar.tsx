@@ -13,7 +13,7 @@ const SIZES = {
   lg: "h-14 w-14 text-base",
 };
 
-export function Avatar({ name, color = "#315C4A", size = "md", className }: Props) {
+export function Avatar({ name, color = "#2F6B52", size = "md", className }: Props) {
   const initials = name
     .split(" ")
     .map((part) => part.charAt(0))

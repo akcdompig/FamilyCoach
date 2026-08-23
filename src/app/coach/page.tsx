@@ -4,9 +4,9 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { Badge } from "@/components/ui/Badge";
 import { Card, SectionTitle } from "@/components/ui/Card";
-import { familyOverview, TRAFFIC_DOT } from "@/lib/insights";
+import { familyOverview, TRAFFIC_COLOR } from "@/lib/insights";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
-import { children, weekStats } from "@/lib/utils";
+import { children, cx, weekStats } from "@/lib/utils";
 
 /**
  * Professional-weergave (release 4 §11): voor jeugdhulp, gezinsbegeleiding
@@ -48,21 +48,21 @@ export default function CoachPage() {
         <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4">
           <div>
             <dt className="text-sm text-muted">Afspraken</dt>
-            <dd className="mt-1 text-xl font-semibold text-ink">
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink">
               {stats.tasksDone}/{stats.tasksTotal}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-muted">Check-ins</dt>
-            <dd className="mt-1 text-xl font-semibold text-ink">{stats.checkIns}</dd>
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink">{stats.checkIns}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted">Beweging</dt>
-            <dd className="mt-1 text-xl font-semibold text-ink">{stats.movementDays} d</dd>
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink">{stats.movementDays} d</dd>
           </div>
           <div>
             <dt className="text-sm text-muted">Samen</dt>
-            <dd className="mt-1 text-xl font-semibold text-ink">{stats.activities}</dd>
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums text-ink">{stats.activities}</dd>
           </div>
         </dl>
 
@@ -86,7 +86,7 @@ export default function CoachPage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {overview.map((item) => (
             <Card key={item.key} tone="outline" className="p-4">
-              <p className="text-2xl">{TRAFFIC_DOT[item.level]}</p>
+              <span className={cx("inline-block h-2.5 w-2.5 rounded-full", TRAFFIC_COLOR[item.level])} aria-hidden />
               <p className="mt-2 text-sm font-semibold text-ink">{item.label}</p>
               <p className="mt-1 text-xs leading-relaxed text-muted">{item.note}</p>
             </Card>

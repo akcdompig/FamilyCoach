@@ -99,7 +99,7 @@ export default function ParentProfilePage() {
       </section>
 
       <section className="mt-8">
-        <SectionTitle>AI-coach</SectionTitle>
+        <SectionTitle>Flow &amp; AI</SectionTitle>
         <Card className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -110,7 +110,7 @@ export default function ParentProfilePage() {
             </div>
             <input
               type="checkbox"
-              aria-label="AI-coach gebruiken"
+              aria-label="AI-ondersteuning gebruiken"
               className="h-5 w-5 shrink-0 accent-primary"
               checked={data.settings.aiEnabled}
               onChange={(event) => updateSettings({ aiEnabled: event.target.checked })}
@@ -133,7 +133,7 @@ export default function ParentProfilePage() {
           </div>
           <div className="flex items-center gap-2 border-t border-line pt-4">
             <Badge tone={status?.configured ? "green" : "muted"}>
-              {status ? (status.configured ? `${status.provider} actief` : "regelcoach") : "controleren…"}
+              {status ? (status.configured ? `${status.provider} actief` : "Regelgebaseerd") : "controleren…"}
             </Badge>
             <span className="text-sm text-muted">
               {status?.configured

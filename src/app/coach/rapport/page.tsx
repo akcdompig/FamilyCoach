@@ -52,7 +52,7 @@ export default function MonthlyReportPage() {
       </section>
 
       <section className="mt-8">
-        <SectionTitle>AI Coach observatie</SectionTitle>
+        <SectionTitle>Observatie</SectionTitle>
         <Card>
           <p className="text-[15px] italic leading-relaxed text-ink">&ldquo;{report.observation}&rdquo;</p>
         </Card>

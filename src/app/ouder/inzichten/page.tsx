@@ -2,7 +2,9 @@
 
 import { AppShell } from "@/components/AppShell";
 import { WeeklyInsight } from "@/components/WeeklyInsight";
+import { Avatar } from "@/components/ui/Avatar";
 import { Card, SectionTitle } from "@/components/ui/Card";
+import { Ring } from "@/components/ui/Progress";
 import { findEscalations } from "@/lib/coach/rules";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import {
@@ -76,7 +78,7 @@ export default function InsightsPage() {
                   <span className="text-[11px] uppercase tracking-wider text-muted">
                     {WEEKDAY_LONG[day.getDay()].slice(0, 2)}
                   </span>
-                  <span className="text-xs text-muted">
+                  <span className="font-mono text-xs tabular-nums text-muted">
                     {done}/{total}
                   </span>
                 </div>
@@ -87,21 +89,27 @@ export default function InsightsPage() {
       </section>
 
       <section className="mt-8">
-        <SectionTitle>Per kind</SectionTitle>
+        <SectionTitle>Per kind, deze week</SectionTitle>
         <div className="space-y-3">
           {kids.map((kid) => {
             const kidStats = weekStats(data, [kid.id]);
             return (
-              <Card key={kid.id}>
-                <div className="flex items-baseline justify-between">
-                  <p className="font-medium text-ink">{kid.name}</p>
-                  <p className="text-sm text-muted">
-                    {kidStats.tasksDone}/{kidStats.tasksTotal} afspraken
+              <Card key={kid.id} className="flex items-center gap-4">
+                <div className="relative flex shrink-0 items-center justify-center">
+                  <Ring value={kidStats.tasksDone} max={Math.max(kidStats.tasksTotal, 1)} size={52} tone="progress" />
+                  <Avatar name={kid.name} color={kid.color} size="sm" className="absolute" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-medium text-ink">{kid.name}</p>
+                    <p className="font-mono text-sm tabular-nums text-muted">
+                      {kidStats.tasksDone}/{kidStats.tasksTotal}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">
+                    {kidStats.checkIns} check-ins · beweging op {kidStats.movementDays} dagen
                   </p>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  {kidStats.checkIns} check-ins · beweging op {kidStats.movementDays} dagen
-                </p>
               </Card>
             );
           })}

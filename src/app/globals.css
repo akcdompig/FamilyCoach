@@ -12,14 +12,15 @@
   }
 
   body {
-    @apply bg-paper text-ink antialiased;
+    @apply bg-atmosphere text-ink antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "ss01";
   }
 
   h1,
   h2,
-  h3 {
-    @apply tracking-tight;
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-ink;
   }
 
   ::selection {
@@ -31,15 +32,35 @@
   textarea {
     @apply text-base sm:text-[15px];
   }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid theme("colors.primary.DEFAULT");
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 @layer utilities {
+  /** Zachte, betekenisloze warmte in de hoeken — geen willekeurige gradient, wel diepte. */
+  .bg-atmosphere {
+    @apply bg-paper;
+    background-image:
+      radial-gradient(circle at 100% 0%, rgba(226, 88, 46, 0.032), transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(31, 111, 99, 0.028), transparent 36%);
+    background-repeat: no-repeat;
+  }
+
   .field {
-    @apply w-full rounded-2xl border border-line bg-paper px-4 py-3 text-[15px] text-ink outline-none transition;
+    @apply w-full rounded-2xl border border-line bg-surface px-4 py-3 text-[15px] text-ink outline-none transition-all duration-200;
   }
 
   .field:focus {
-    @apply border-primary/40 bg-surface;
+    @apply border-primary/50 ring-4 ring-primary/10;
   }
 
   .label {
@@ -47,11 +68,11 @@
   }
 
   .chip {
-    @apply rounded-full border border-line bg-surface px-3.5 py-2 text-sm text-muted transition;
+    @apply rounded-full border border-line bg-surface px-3.5 py-2 text-sm text-muted transition-all duration-200;
   }
 
   .chip-active {
-    @apply border-primary bg-sage text-primary-dark;
+    @apply border-primary bg-sage text-primary-dark shadow-soft;
   }
 }
 

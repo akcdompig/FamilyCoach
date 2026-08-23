@@ -35,20 +35,20 @@ export function AppShell({ children, role }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-atmosphere">
       <SideNavigation items={items} familyName={data.family.name || "Jouw gezin"} isDemo={data.isDemo} />
 
       <div className="md:pl-64">
         <header className="sticky top-0 z-30 border-b border-line/70 bg-paper/90 backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-5 py-3">
             <div className="flex items-center gap-2.5 md:hidden">
-              <span className="text-[15px] font-semibold tracking-tight text-ink">FamilyFlow</span>
+              <span className="font-display text-[16px] font-semibold tracking-tight text-ink">FamilyFlow</span>
             </div>
 
             <div className="flex items-center gap-3">
               {activePerson.role === "child" ? (
                 <span className="rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent-dark">
-                  {pointsFor(data, activePerson.id)} punten
+                  <span className="font-mono tabular-nums">{pointsFor(data, activePerson.id)}</span> punten
                 </span>
               ) : null}
               <label className="sr-only" htmlFor="person-switch">
@@ -74,7 +74,7 @@ export function AppShell({ children, role }: Props) {
           </div>
         </header>
 
-        <main className="mx-auto max-w-3xl px-5 pb-28 pt-5 md:pb-16 lg:mr-[420px] lg:max-w-none lg:pr-4">{children}</main>
+        <main className="mx-auto max-w-3xl px-5 pb-28 pt-5 md:max-w-none md:pb-16 lg:mr-[420px] lg:pr-4">{children}</main>
       </div>
 
       <BottomNavigation items={items} />

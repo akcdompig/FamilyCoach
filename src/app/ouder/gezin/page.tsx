@@ -2,111 +2,227 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FamilyMemberCard } from "@/components/FamilyMemberCard";
+import { FamilyTeamStrip } from "@/components/FamilyTeamStrip";
+import { GoalJourney } from "@/components/GoalJourney";
+import { Icon } from "@/components/Icons";
 import { ReminderPanel } from "@/components/flow/ReminderPanel";
-import { Avatar } from "@/components/ui/Avatar";
+import { ResponsibilityMap } from "@/components/ResponsibilityMap";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
-import { CATEGORY_ICON, checkInFor, dayProgress, pointsFor, tasksForPerson, isDone } from "@/lib/utils";
+import {
+  CATEGORY_ICON,
+  checkInFor,
+  dayProgress,
+  goalAchieved,
+  goalProgressFor,
+  milestonesFor,
+  personById,
+  pointsFor,
+  tasksForPerson,
+  isDone,
+} from "@/lib/utils";
 
-const COLORS = ["#E5B96A", "#4C7A65", "#C2913F", "#6E7973", "#315C4A"];
+const COLORS = ["#E2582E", "#2F6B52", "#1F6F63", "#726858", "#56917A"];
 
 export default function FamilyPage() {
-  const { data, addPerson } = useFamilyFlow();
+  const { data, addPerson, approveRedemption, denyRedemption } = useFamilyFlow();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [interests, setInterests] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const familyGoals = data.goals.filter((g) => !g.personId);
+  const pendingRedemptions = data.redemptions
+    .filter((r) => r.status === "aangevraagd")
+    .map((r) => ({ redemption: r, reward: data.rewards.find((w) => w.id === r.rewardId), person: personById(data, r.personId) }))
+    .filter((entry) => entry.reward && entry.person);
 
   return (
     <AppShell role="parent">
       <header className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold leading-tight text-ink">Gezin</h1>
-          <p className="mt-1 text-sm text-muted">{data.family.name}</p>
+          <h1 className="font-display text-[28px] font-semibold leading-tight text-ink">Gezin</h1>
+          <p className="mt-1 text-sm text-muted">{data.family.name} · hoe het samen gaat</p>
         </div>
         <Button size="sm" onClick={() => setOpen(true)}>
           Kind toevoegen
         </Button>
       </header>
 
-      <div className="space-y-4">
-        {data.people.map((person) => {
-          const progress = dayProgress(data, person.id);
-          const tasks = tasksForPerson(data, person.id);
-          return (
-            <Card key={person.id}>
-              <div className="flex items-start gap-4">
-                <Avatar name={person.name} color={person.color} size="lg" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-semibold text-ink">{person.name}</h2>
-                    <Badge tone={person.role === "child" ? "accent" : "neutral"}>
-                      {person.role === "child" ? `${person.age ?? "?"} jaar` : "Ouder"}
-                    </Badge>
-                  </div>
-                  {person.school ? <p className="mt-1 text-sm text-muted">{person.school}</p> : null}
-                  {person.role === "child" ? (
-                    <p className="mt-2 text-sm text-muted">
-                      Vandaag {progress.done}/{progress.total} afspraken · {pointsFor(data, person.id)} punten ·{" "}
-                      {checkInFor(data, person.id) ? "check-in gedaan" : "nog geen check-in"}
-                    </p>
-                  ) : null}
-                  {person.interests.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {person.interests.map((interest) => (
-                        <span key={interest} className="rounded-full bg-sage-light px-2.5 py-1 text-xs text-primary-dark">
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+      <FamilyTeamStrip data={data} />
 
-              {person.role === "child" ? (
-                <div className="mt-5 space-y-3 border-t border-line pt-4">
-                  {person.likes ? (
-                    <p className="text-sm text-muted">
-                      <span className="font-medium text-ink">Wordt blij van:</span> {person.likes}
-                    </p>
-                  ) : null}
-                  {person.hard ? (
-                    <p className="text-sm text-muted">
-                      <span className="font-medium text-ink">Vindt moeilijk:</span> {person.hard}
-                    </p>
-                  ) : null}
-                  <div>
-                    <p className="mb-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-muted">
-                      Afspraken vandaag
-                    </p>
-                    <ul className="space-y-1.5">
-                      {tasks.length === 0 ? (
-                        <li className="text-sm text-muted">Geen afspraken voor vandaag.</li>
-                      ) : (
-                        tasks.map((task) => (
-                          <li key={task.id} className="flex items-center gap-2 text-sm text-ink">
-                            <span>{CATEGORY_ICON[task.category]}</span>
-                            <span className={isDone(data, task.id) ? "text-muted line-through" : ""}>
-                              {task.title}
-                            </span>
-                            {task.time ? <span className="text-xs text-muted">{task.time}</span> : null}
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  </div>
-                  <ReminderPanel person={person} />
+      {pendingRedemptions.length > 0 ? (
+        <section className="mt-8">
+          <SectionTitle>Aangevraagde beloningen</SectionTitle>
+          <div className="space-y-3">
+            {pendingRedemptions.map(({ redemption, reward, person }) => (
+              <Card key={redemption.id} tone="sand" className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-ink">{reward!.title}</p>
+                  <p className="mt-0.5 text-sm text-muted">
+                    {person!.name} · {reward!.cost} punten
+                  </p>
                 </div>
-              ) : null}
-            </Card>
-          );
-        })}
-      </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      denyRedemption(redemption.id);
+                      toast("Aanvraag afgewezen", "Punten zijn teruggegeven.");
+                    }}
+                  >
+                    Afwijzen
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      approveRedemption(redemption.id);
+                      toast("Goedgekeurd", `${person!.name} ziet dit terug.`);
+                    }}
+                  >
+                    Goedkeuren
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {familyGoals.length > 0 ? (
+        <section className="mt-8">
+          <SectionTitle>Gezinsdoelen</SectionTitle>
+          <div className="space-y-4">
+            {familyGoals.map((goal) => {
+              const progress = goalProgressFor(data, goal);
+              const achieved = goalAchieved(data, goal);
+              return (
+                <Card key={goal.id} tone={achieved ? "sage" : "surface"}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="font-medium text-ink">{goal.title}</p>
+                    <span className="shrink-0 font-mono text-sm text-muted">
+                      {progress}/{goal.target} {goal.unit}
+                    </span>
+                  </div>
+                  <GoalJourney
+                    goal={goal}
+                    progress={progress}
+                    milestones={milestonesFor(goal)}
+                    achieved={achieved}
+                    className="mt-3"
+                  />
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="mt-8">
+        <SectionTitle>Verantwoordelijkheden thuis</SectionTitle>
+        <ResponsibilityMap data={data} people={data.people} showStatus />
+      </section>
+
+      <section className="mt-8">
+        <SectionTitle>Gezinsleden</SectionTitle>
+        <div className="space-y-2.5">
+          {data.people.map((person) => {
+            const expanded = expandedId === person.id;
+            const progress = dayProgress(data, person.id);
+            const tasks = tasksForPerson(data, person.id);
+            return (
+              <div key={person.id}>
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(expanded ? null : person.id)}
+                  className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-3xl"
+                >
+                  <FamilyMemberCard
+                    person={person}
+                    done={progress.done}
+                    total={progress.total}
+                    mood={checkInFor(data, person.id)?.mood}
+                    points={person.role === "child" ? pointsFor(data, person.id) : undefined}
+                  />
+                </button>
+
+                {expanded ? (
+                  <Card className="mt-2 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge tone={person.role === "child" ? "accent" : "neutral"}>
+                        {person.role === "child" ? `${person.age ?? "?"} jaar` : "Ouder"}
+                      </Badge>
+                      {person.school ? <span className="text-sm text-muted">{person.school}</span> : null}
+                    </div>
+
+                    {person.interests.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {person.interests.map((interest) => (
+                          <span
+                            key={interest}
+                            className="rounded-full bg-sage-light px-2.5 py-1 text-xs text-primary-dark"
+                          >
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {person.role === "child" ? (
+                      <div className="space-y-3 border-t border-line pt-3">
+                        {person.likes ? (
+                          <p className="text-sm text-muted">
+                            <span className="font-medium text-ink">Wordt blij van:</span> {person.likes}
+                          </p>
+                        ) : null}
+                        {person.hard ? (
+                          <p className="text-sm text-muted">
+                            <span className="font-medium text-ink">Vindt moeilijk:</span> {person.hard}
+                          </p>
+                        ) : null}
+                        <div>
+                          <p className="mb-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-muted">
+                            Afspraken vandaag
+                          </p>
+                          <ul className="space-y-1.5">
+                            {tasks.length === 0 ? (
+                              <li className="text-sm text-muted">Geen afspraken voor vandaag.</li>
+                            ) : (
+                              tasks.map((task) => (
+                                <li key={task.id} className="flex items-center gap-2 text-sm text-ink">
+                                  <Icon
+                                    name={CATEGORY_ICON[task.category]}
+                                    className="h-3.5 w-3.5 shrink-0 text-muted"
+                                  />
+                                  <span className={isDone(data, task.id) ? "text-muted line-through" : ""}>
+                                    {task.title}
+                                  </span>
+                                  {task.time ? (
+                                    <span className="font-mono text-xs text-muted">{task.time}</span>
+                                  ) : null}
+                                </li>
+                              ))
+                            )}
+                          </ul>
+                        </div>
+                        <ReminderPanel person={person} />
+                      </div>
+                    ) : null}
+                  </Card>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {data.coachProfile ? (
         <section className="mt-8">

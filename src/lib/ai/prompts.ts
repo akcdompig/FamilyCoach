@@ -59,6 +59,11 @@ export function buildUserPrompt(kind: MessageKind, context: CoachContext): strin
   if (context.todayMood) lines.push(`Check-in van vandaag: ${context.todayMood}.`);
   if (context.recentMoods.length) lines.push(`Stemming afgelopen dagen: ${context.recentMoods.join(", ")}.`);
   if (context.streakDays > 1) lines.push(`Aantal dagen op rij redelijk gelukt: ${context.streakDays}.`);
+  if (context.nearestGoal) {
+    const g = context.nearestGoal;
+    lines.push(`Doel waar diegene aan werkt: "${g.title}", ${g.progress}/${g.target}${g.unit ? ` ${g.unit}` : ""}.`);
+  }
+  if (context.tomorrowCount > 0) lines.push(`Morgen staan er ${context.tomorrowCount} afspraken gepland.`);
   if (context.childSummaries?.length) {
     lines.push(
       `Kinderen vandaag: ${context.childSummaries

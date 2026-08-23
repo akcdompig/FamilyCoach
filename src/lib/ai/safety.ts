@@ -164,5 +164,14 @@ export function sanitizeContext(raw: unknown): CoachContext {
           activities: Number((input.weekStats as Record<string, unknown>).activities) || 0,
         }
       : undefined,
+    nearestGoal: input.nearestGoal
+      ? {
+          title: str((input.nearestGoal as Record<string, unknown>).title, 60),
+          progress: Number((input.nearestGoal as Record<string, unknown>).progress) || 0,
+          target: Number((input.nearestGoal as Record<string, unknown>).target) || 0,
+          unit: str((input.nearestGoal as Record<string, unknown>).unit, 16) || undefined,
+        }
+      : undefined,
+    tomorrowCount: Number(input.tomorrowCount) || 0,
   };
 }

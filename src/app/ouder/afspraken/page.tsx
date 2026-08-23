@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { Icon } from "@/components/Icons";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
@@ -10,7 +11,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { Category } from "@/lib/types";
-import { CATEGORY_ICON, CATEGORY_LABEL, WEEKDAYS, children, cx } from "@/lib/utils";
+import { CATEGORY_ICON, CATEGORY_LABEL, WEEKDAYS, children, cx, goalsLinkedToTask } from "@/lib/utils";
 
 const CATEGORIES: Category[] = ["ochtend", "school", "beweging", "scherm", "avond", "huishouden", "samen"];
 const NEGATIVE = /^(niet|geen|stop|nooit)\b/i;
@@ -65,20 +66,36 @@ export default function AgreementsPage() {
                 />
               ) : (
                 <div className="space-y-3">
-                  {tasks.map((task) => (
+                  {tasks.map((task) => {
+                    const linkedGoals = goalsLinkedToTask(data, task.id);
+                    return (
                     <Card key={task.id} className={cx(!task.active && "opacity-60")}>
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <p className="font-medium text-ink">{task.title}</p>
-                          <p className="mt-1 text-sm text-muted">
-                            {CATEGORY_ICON[task.category]} {CATEGORY_LABEL[task.category]}
-                            {task.time ? ` · ${task.time}` : ""} ·{" "}
-                            {task.days.length === 7
-                              ? "elke dag"
-                              : WEEKDAYS.filter((day) => task.days.includes(day.index))
-                                  .map((day) => day.short)
-                                  .join(" ")}
+                          <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-muted">
+                            <span className="inline-flex items-center gap-1">
+                              <Icon name={CATEGORY_ICON[task.category]} className="h-3.5 w-3.5" />
+                              {CATEGORY_LABEL[task.category]}
+                            </span>
+                            <span className="font-mono tabular-nums">
+                              {task.time ? `· ${task.time}` : ""}
+                            </span>
+                            <span>
+                              ·{" "}
+                              {task.days.length === 7
+                                ? "elke dag"
+                                : WEEKDAYS.filter((day) => task.days.includes(day.index))
+                                    .map((day) => day.short)
+                                    .join(" ")}
+                            </span>
                           </p>
+                          {linkedGoals.length > 0 ? (
+                            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-progress-soft px-2.5 py-1 text-xs text-progress-dark">
+                              <Icon name="target" className="h-3 w-3" />
+                              Telt mee voor: {linkedGoals.map((g) => g.title).join(", ")}
+                            </p>
+                          ) : null}
                         </div>
                         <Badge tone="muted">+{task.points}</Badge>
                       </div>
@@ -102,7 +119,8 @@ export default function AgreementsPage() {
                         </Button>
                       </div>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -163,7 +181,33 @@ export default function AgreementsPage() {
             ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <span className="label">Categorie</span>
+            <div className="grid grid-cols-4 gap-2">
+              {CATEGORIES.map((item) => {
+                const active = category === item;
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setCategory(item)}
+                    className={cx(
+                      "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 text-center text-xs transition",
+                      active
+                        ? "border-primary bg-sage text-primary-dark"
+                        : "border-line bg-surface text-muted hover:bg-sage-light",
+                    )}
+                  >
+                    <Icon name={CATEGORY_ICON[item]} className="h-4 w-4" />
+                    {CATEGORY_LABEL[item]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="label" htmlFor="task-person">
                 Voor wie
@@ -177,23 +221,6 @@ export default function AgreementsPage() {
                 {kids.map((kid) => (
                   <option key={kid.id} value={kid.id}>
                     {kid.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="label" htmlFor="task-category">
-                Categorie
-              </label>
-              <select
-                id="task-category"
-                className="field"
-                value={category}
-                onChange={(event) => setCategory(event.target.value as Category)}
-              >
-                {CATEGORIES.map((item) => (
-                  <option key={item} value={item}>
-                    {CATEGORY_LABEL[item]}
                   </option>
                 ))}
               </select>

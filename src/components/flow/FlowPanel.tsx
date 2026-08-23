@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ConfettiBurst, useConfetti } from "@/components/effects/ConfettiBurst";
 import { AVATAR_STATE_LABEL, FlowAvatar } from "@/components/flow/FlowAvatar";
 import { FlowChoices, ProgressDots } from "@/components/flow/FlowChoices";
-import { Icon } from "@/components/Icons";
+import { Icon, type IconName } from "@/components/Icons";
 import { flowProgress } from "@/lib/ai/flows/progress";
 import { useFlowRuntime, type ProviderStatus } from "@/lib/flow/FlowRuntime";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
@@ -19,10 +19,10 @@ const PROVIDER_LABEL: Record<string, string> = {
   openai: "OpenAI",
 };
 
-const QUICK_ACTIONS: { flowId: "conflict-coach" | "activity-coach" | "free-chat"; label: string; emoji: string; hint: string }[] = [
-  { flowId: "conflict-coach", label: "Help me met een conflict", emoji: "🗣️", hint: "Ruzie of iets vervelends uitpraten" },
-  { flowId: "activity-coach", label: "Kies een activiteit voor mij", emoji: "⚡", hint: "Klein en haalbaar" },
-  { flowId: "free-chat", label: "Praat gewoon even", emoji: "💬", hint: "Vraag iets of vertel iets" },
+const QUICK_ACTIONS: { flowId: "conflict-coach" | "activity-coach" | "free-chat"; label: string; icon: IconName; hint: string }[] = [
+  { flowId: "conflict-coach", label: "Help me met een conflict", icon: "heart", hint: "Ruzie of iets vervelends uitpraten" },
+  { flowId: "activity-coach", label: "Kies een activiteit voor mij", icon: "spark", hint: "Klein en haalbaar" },
+  { flowId: "free-chat", label: "Praat gewoon even", icon: "chat", hint: "Vraag iets of vertel iets" },
 ];
 
 export function FlowPanel({ variant = "sheet" }: { variant?: "sheet" | "dock" }) {
@@ -39,16 +39,18 @@ export function FlowPanel({ variant = "sheet" }: { variant?: "sheet" | "dock" })
   const progress = session ? flowProgress(session.flowId, session.stepId) : null;
   const isActive = session?.status === "active";
 
+  // Vanaf 13 wordt de viering rustiger — dezelfde erkenning, minder kinderlijk effectbetoon.
+  const isTeen = (activePerson.age ?? 0) >= 13;
   const { trigger, fire } = useConfetti();
   const celebratedRef = useRef(false);
   useEffect(() => {
     if (avatarState === "celebrating" && !celebratedRef.current) {
       celebratedRef.current = true;
-      fire();
+      if (!isTeen) fire();
     }
     if (avatarState !== "celebrating") celebratedRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [avatarState]);
+  }, [avatarState, isTeen]);
 
   function submitText() {
     const value = text.trim();
@@ -137,7 +139,7 @@ export function FlowPanel({ variant = "sheet" }: { variant?: "sheet" | "dock" })
             ) : null}
           </>
         )}
-        {error ? <p className="rounded-xl bg-[#FBF1EF] px-3 py-2 text-sm text-[#9B3B2F]">{error}</p> : null}
+        {error ? <p className="rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger-dark">{error}</p> : null}
       </div>
 
       {session && isActive ? (
@@ -264,7 +266,9 @@ function IdleScreen({
             onClick={() => onQuickStart(action.flowId)}
             className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-left transition hover:border-sage-dark hover:bg-sage-light active:scale-[0.99]"
           >
-            <span className="text-2xl">{action.emoji}</span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sage-light">
+              <Icon name={action.icon} className="h-4 w-4 text-primary" />
+            </span>
             <span>
               <span className="block text-[14.5px] font-medium text-ink">{action.label}</span>
               <span className="block text-xs text-muted">{action.hint}</span>

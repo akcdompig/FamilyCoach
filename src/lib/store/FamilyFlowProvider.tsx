@@ -18,6 +18,7 @@ import type {
   AppData,
   CoachMessage,
   ConflictReport,
+  Goal,
   Mood,
   Person,
   PilotFeedback,
@@ -41,11 +42,22 @@ interface FamilyFlowContextValue {
   addTask: (input: Omit<Task, "id" | "familyId" | "createdAt">) => void;
   updateTask: (taskId: string, patch: Partial<Task>) => void;
   removeTask: (taskId: string) => void;
+  postponeTask: (taskId: string, personId: string, date: string, toDate: string) => void;
+  skipTask: (taskId: string, personId: string, date: string) => void;
+  setTaskPriority: (taskId: string, personId: string, date: string, high: boolean) => void;
+  undoTaskAdjustment: (taskId: string, personId: string, date: string) => void;
   addPerson: (input: Omit<Person, "id" | "familyId" | "createdAt">) => Person;
+  addGoal: (input: Omit<Goal, "id" | "familyId" | "createdAt" | "progress"> & { progress?: number }) => void;
+  updateGoal: (goalId: string, patch: Partial<Goal>) => void;
+  removeGoal: (goalId: string) => void;
+  logGoalProgress: (goalId: string, amount: number) => void;
+  addGoalReflection: (goalId: string, text: string) => void;
   pushMessage: (message: Omit<CoachMessage, "id" | "familyId" | "createdAt">) => void;
   answerMessage: (messageId: string) => void;
   dismissMessage: (messageId: string) => void;
   redeemReward: (rewardId: string, personId: string) => void;
+  approveRedemption: (redemptionId: string) => void;
+  denyRedemption: (redemptionId: string) => void;
   toggleActivity: (activityId: string, personId: string) => void;
   addPilotFeedback: (entry: Omit<PilotFeedback, "id" | "createdAt">) => void;
   updateSettings: (patch: Partial<Settings>) => void;
@@ -210,6 +222,110 @@ export function FamilyFlowProvider({ children }: { children: ReactNode }) {
         update((d) => {
           d.tasks = d.tasks.filter((t) => t.id !== taskId);
           d.completions = d.completions.filter((c) => c.taskId !== taskId);
+          // Een doel mag nooit een verwijzing naar een niet-bestaande afspraak achterhouden.
+          d.goals = d.goals.map((g) =>
+            g.linkedTaskIds?.includes(taskId)
+              ? { ...g, linkedTaskIds: g.linkedTaskIds.filter((id) => id !== taskId) }
+              : g,
+          );
+        }),
+
+      addGoal: (input) =>
+        update((d) => {
+          d.goals.push({
+            ...input,
+            progress: input.progress ?? 0,
+            id: uid("goal"),
+            familyId: d.family.id,
+            createdAt: new Date().toISOString(),
+          });
+        }),
+
+      updateGoal: (goalId, patch) =>
+        update((d) => {
+          const index = d.goals.findIndex((g) => g.id === goalId);
+          if (index >= 0) d.goals[index] = { ...d.goals[index], ...patch };
+        }),
+
+      removeGoal: (goalId) =>
+        update((d) => {
+          d.goals = d.goals.filter((g) => g.id !== goalId);
+        }),
+
+      logGoalProgress: (goalId, amount) =>
+        update((d) => {
+          const goal = d.goals.find((g) => g.id === goalId);
+          if (!goal || goal.linkedTaskIds?.length) return;
+          goal.progress = Math.max(0, Math.min(goal.target, goal.progress + amount));
+        }),
+
+      addGoalReflection: (goalId, text) =>
+        update((d) => {
+          const goal = d.goals.find((g) => g.id === goalId);
+          if (!goal || !text.trim()) return;
+          goal.reflections = [
+            ...(goal.reflections ?? []),
+            { id: uid("reflect"), text: text.trim(), createdAt: new Date().toISOString() },
+          ];
+        }),
+
+      postponeTask: (taskId, personId, date, toDate) =>
+        update((d) => {
+          d.taskAdjustments = [
+            ...(d.taskAdjustments ?? []).filter(
+              (a) => !(a.taskId === taskId && a.personId === personId && a.date === date),
+            ),
+            {
+              id: uid("adj"),
+              taskId,
+              personId,
+              date,
+              action: "postponed",
+              movedToDate: toDate,
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        }),
+
+      skipTask: (taskId, personId, date) =>
+        update((d) => {
+          d.taskAdjustments = [
+            ...(d.taskAdjustments ?? []).filter(
+              (a) => !(a.taskId === taskId && a.personId === personId && a.date === date),
+            ),
+            { id: uid("adj"), taskId, personId, date, action: "skipped", createdAt: new Date().toISOString() },
+          ];
+        }),
+
+      setTaskPriority: (taskId, personId, date, high) =>
+        update((d) => {
+          d.taskAdjustments = d.taskAdjustments ?? [];
+          const existing = d.taskAdjustments.find(
+            (a) => a.taskId === taskId && a.personId === personId && a.date === date,
+          );
+          if (existing) {
+            if (high) existing.priority = "high";
+            else delete existing.priority;
+            if (!existing.action && !existing.priority) {
+              d.taskAdjustments = d.taskAdjustments.filter((a) => a.id !== existing.id);
+            }
+          } else if (high) {
+            d.taskAdjustments.push({
+              id: uid("adj"),
+              taskId,
+              personId,
+              date,
+              priority: "high",
+              createdAt: new Date().toISOString(),
+            });
+          }
+        }),
+
+      undoTaskAdjustment: (taskId, personId, date) =>
+        update((d) => {
+          d.taskAdjustments = (d.taskAdjustments ?? []).filter(
+            (a) => !(a.taskId === taskId && a.personId === personId && a.date === date),
+          );
         }),
 
       addPerson: (input) => {
@@ -255,6 +371,19 @@ export function FamilyFlowProvider({ children }: { children: ReactNode }) {
             status: "aangevraagd",
             createdAt: new Date().toISOString(),
           });
+        }),
+
+      approveRedemption: (redemptionId) =>
+        update((d) => {
+          const redemption = d.redemptions.find((r) => r.id === redemptionId);
+          if (redemption) redemption.status = "goedgekeurd";
+        }),
+
+      // Punten worden afgeleid uit alle redemptions (zie pointsFor) — een aanvraag intrekken
+      // geeft de punten dus automatisch terug, zonder los boekhouden.
+      denyRedemption: (redemptionId) =>
+        update((d) => {
+          d.redemptions = d.redemptions.filter((r) => r.id !== redemptionId);
         }),
 
       toggleActivity: (activityId, personId) =>
