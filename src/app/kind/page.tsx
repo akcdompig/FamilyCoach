@@ -259,7 +259,7 @@ export default function ChildHome() {
         <FlowInsightCard insight={insight} onDismiss={dismissInsight} />
       ) : null}
 
-      <div className="lg:grid lg:grid-cols-[1fr_320px] lg:items-start lg:gap-8">
+      <div className="xl:grid xl:grid-cols-[1fr_320px] xl:items-start xl:gap-8">
         <div className="min-w-0">
           {nextUp ? (
             <section>
@@ -354,7 +354,7 @@ export default function ChildHome() {
           ) : null}
         </div>
 
-        <aside className="mt-8 space-y-6 lg:mt-0">
+        <aside className="mt-8 space-y-6 xl:mt-0">
           {nearestGoal ? (
             <Card tone="progress">
               <p className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-[0.14em] text-progress-dark">
