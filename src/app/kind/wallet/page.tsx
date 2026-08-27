@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { Icon } from "@/components/Icons";
 import { RewardCard } from "@/components/RewardCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card, SectionTitle } from "@/components/ui/Card";
@@ -56,7 +57,9 @@ export default function WalletPage() {
                   {formatEuro(wallet.earned)}
                 </p>
               </div>
-              <span className="text-4xl">💰</span>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-soft">
+                <Icon name="wallet" className="h-5 w-5 text-accent-dark" />
+              </span>
             </div>
             <Progress value={wallet.earned} max={wallet.maximum} tone="accent" className="mt-5" />
             <div className="mt-3 flex justify-between font-mono text-sm tabular-nums text-muted">

@@ -110,7 +110,7 @@ function DayView({
           <EmptyState
             title="Geen afspraken vandaag"
             description="Vrije dag. Je kunt altijd nog iets samen doen bij Samen."
-            icon="🌤️"
+            icon="sun"
           />
         ) : (
           Object.entries(grouped).map(([category, items]) => (
@@ -313,7 +313,7 @@ function PlanPageInner() {
   if (!child) {
     return (
       <AppShell role="child">
-        <EmptyState title="Nog geen dashboard" description="Er is nog geen kind toegevoegd aan dit gezin." />
+        <EmptyState title="Nog geen dashboard" description="Er is nog geen kind toegevoegd aan dit gezin." icon="users" />
       </AppShell>
     );
   }

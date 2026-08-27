@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { Icon } from "@/components/Icons";
 import { Badge } from "@/components/ui/Badge";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { familyOverview, TRAFFIC_COLOR } from "@/lib/insights";
@@ -76,8 +77,9 @@ export default function CoachPage() {
       <section className="mt-8">
         <SectionTitle
           action={
-            <Link href="/coach/rapport" className="text-sm text-primary hover:underline">
-              Maandrapport →
+            <Link href="/coach/rapport" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+              Maandrapport
+              <Icon name="chevron" className="h-3.5 w-3.5 -rotate-90" />
             </Link>
           }
         >

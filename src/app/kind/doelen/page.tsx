@@ -468,6 +468,7 @@ function GoalsPageInner() {
             <EmptyState
               title="Nog geen doelen"
               description="Begin klein en concreet — dat werkt het best."
+              icon="target"
               action={
                 <Button size="sm" onClick={openCreate}>
                   Eerste doel maken

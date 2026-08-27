@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FlowMark } from "@/components/FlowMark";
+import { Icon } from "@/components/Icons";
 import { Button } from "@/components/ui/Button";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 
@@ -116,8 +117,9 @@ export default function DemoPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-[17px] font-semibold text-ink">{step.title}</p>
                 <p className="mt-1.5 text-[15px] leading-relaxed text-muted">{step.body}</p>
-                <Button size="sm" variant="soft" className="mt-4" onClick={() => goTo(step)}>
-                  {step.cta} →
+                <Button size="sm" variant="soft" className="mt-4 gap-1.5" onClick={() => goTo(step)}>
+                  {step.cta}
+                  <Icon name="chevron" className="h-3.5 w-3.5 -rotate-90" />
                 </Button>
               </div>
             </li>

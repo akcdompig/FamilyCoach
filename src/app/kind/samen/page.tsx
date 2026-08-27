@@ -79,7 +79,7 @@ export default function TogetherPage() {
           <EmptyState
             title="Nog niets gepland"
             description="Een ouder kan hier een gezamenlijke activiteit toevoegen, bijvoorbeeld 20 minuten samen wandelen."
-            icon="🧡"
+            icon="heart"
           />
         ) : (
           <div className="space-y-4">

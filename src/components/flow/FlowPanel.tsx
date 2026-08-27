@@ -84,7 +84,7 @@ export function FlowPanel({ variant = "sheet" }: { variant?: "sheet" | "dock" })
               aria-label="Flow sluiten"
               className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-sage-light hover:text-ink"
             >
-              ✕
+              <Icon name="close" className="h-4 w-4" />
             </button>
           ) : null}
         </div>
@@ -169,7 +169,7 @@ export function FlowPanel({ variant = "sheet" }: { variant?: "sheet" | "dock" })
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white transition hover:bg-primary-dark disabled:opacity-40"
                   aria-label="Versturen"
                 >
-                  →
+                  <Icon name="chevron" className="h-4 w-4 -rotate-90" />
                 </button>
               </div>
             ) : (

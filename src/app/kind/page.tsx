@@ -129,7 +129,7 @@ export default function ChildHome() {
         <EmptyState
           title="Nog geen kind in dit gezin"
           description="Voeg iemand toe via het ouderdashboard, dan verschijnt hier een eigen dashboard."
-          icon="👋"
+          icon="users"
         />
       </AppShell>
     );
@@ -307,7 +307,7 @@ export default function ChildHome() {
               <EmptyState
                 title="Vandaag staat er niets"
                 description="Geniet ervan. Morgen pakken we het weer op."
-                icon="🌤️"
+                icon="sun"
               />
             ) : (
               <div className="space-y-2.5">

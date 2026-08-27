@@ -48,7 +48,7 @@ export default function AgreementsPage() {
         <EmptyState
           title="Nog geen kinderen in het gezin"
           description="Voeg eerst iemand toe bij Gezin. Daarna kun je afspraken maken."
-          icon="👋"
+          icon="users"
         />
       ) : null}
 
@@ -62,6 +62,7 @@ export default function AgreementsPage() {
                 <EmptyState
                   title="Nog geen afspraken"
                   description={`Begin met één afspraak voor ${kid.name}. Eén afspraak die lukt is meer waard dan vijf die blijven staan.`}
+                  icon="list"
                   action={<Button size="sm" onClick={() => setOpen(true)}>Afspraak maken</Button>}
                 />
               ) : (
