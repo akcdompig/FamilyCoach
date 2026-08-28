@@ -53,7 +53,7 @@ export function ProgressDots({ index, total }: { index: number; total: number })
         <motion.span
           key={i}
           className="h-1.5 rounded-full bg-sage-dark/50"
-          animate={{ width: i <= index ? 16 : 6, backgroundColor: i <= index ? "#0E7C86" : "rgba(32,28,26,0.16)" }}
+          animate={{ width: i <= index ? 16 : 6, backgroundColor: i <= index ? "#0F7A3D" : "rgba(35,20,51,0.16)" }}
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
         />
       ))}

@@ -6,9 +6,11 @@ import { CheckIn } from "@/components/CheckIn";
 import { CoachMessageCard } from "@/components/CoachMessageCard";
 import { Disclaimer } from "@/components/Disclaimer";
 import { FamilyMemberCard } from "@/components/FamilyMemberCard";
+import { FamilyTeamStrip } from "@/components/FamilyTeamStrip";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionTitle } from "@/components/ui/Card";
-import { DualRing } from "@/components/ui/Progress";
+import { FlowScope } from "@/components/ui/FlowScope";
 import { StarRating } from "@/components/ui/StarRating";
 import { activeMessage, useCoachMoment } from "@/lib/coach/useCoach";
 import { parentFocusSuggestion } from "@/lib/coach/rules";
@@ -34,42 +36,43 @@ export default function ParentHome() {
   const todaysActivity = data.activities.find((activity) => activity.date === today);
   const stats = weekStats(data, kids.map((kid) => kid.id));
   const safetyConflicts = (data.conflicts ?? []).filter((c) => c.privacy === "SAFETY_RELEVANT");
+  const conflictsToday = kids.filter((kid) =>
+    (data.conflicts ?? []).some((c) => c.personId === kid.id && c.createdAt.slice(0, 10) === today),
+  );
 
   const family = familyProgress(data);
-  const todayPct = family.total > 0 ? Math.round((family.done / family.total) * 100) : 0;
-  const weekPct = stats.tasksTotal > 0 ? Math.round((stats.tasksDone / stats.tasksTotal) * 100) : 0;
   const familyAchievement = kids.length
     ? Math.round(kids.reduce((sum, kid) => sum + combinedAchievementFor(data, kid.id), 0) / kids.length)
     : 0;
 
   return (
     <AppShell role="parent">
-      <header className="mb-6">
-        <Card tone="hero" className="overflow-hidden">
-          <p className="text-sm text-white/60">{data.family.name}</p>
-          <h1 className="mt-1 font-display text-[26px] font-semibold leading-tight text-white sm:text-[30px]">
+      {/* ME — wie ben ik, hoe staat het gezin er vandaag voor. Geen donkere dashboard-doos: de avatar draagt de identiteit. */}
+      <header className="mb-8 flex items-start gap-4 sm:gap-5">
+        <Avatar
+          name={activePerson.name}
+          color={activePerson.color}
+          avatarVariant={activePerson.avatarVariant}
+          size="xl"
+          glow
+          className="mt-1"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-muted">{data.family.name}</p>
+          <h1 className="mt-0.5 font-display text-[28px] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[38px]">
             {greeting()}, {activePerson.name}
           </h1>
+          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted">
+            {kids.length === 0
+              ? "Nog geen kinderen toegevoegd aan dit gezin."
+              : family.total === 0
+                ? "Vandaag staat er nog niets gepland voor het gezin."
+                : `Vandaag zijn ${family.done} van de ${family.total} afspraken gelukt.`}
+          </p>
           <div className="mt-3">
-            <StarRating percentage={familyAchievement} />
+            <StarRating percentage={familyAchievement} size="sm" />
           </div>
-
-          {kids.length > 0 ? (
-            <div className="mt-5 flex items-center gap-5">
-              <DualRing individual={todayPct} family={weekPct} max={100} size={104} />
-              <div className="min-w-0 space-y-2 text-sm">
-                <p className="flex items-center gap-1.5 text-white/80">
-                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
-                  Vandaag
-                </p>
-                <p className="flex items-center gap-1.5 text-white/60">
-                  <span className="h-2 w-2 rounded-full bg-white/55" />
-                  Deze week
-                </p>
-              </div>
-            </div>
-          ) : null}
-        </Card>
+        </div>
       </header>
 
       {safetyConflicts.length > 0 ? (
@@ -87,64 +90,117 @@ export default function ParentHome() {
         </Card>
       ) : null}
 
-      <CoachMessageCard
-        message={message}
-        loading={loading}
-        onRefresh={() => void generate(message?.kind === "checkin" ? "parent-tip" : "insight")}
-        onDismiss={message ? () => dismissMessage(message.id) : undefined}
-        onSuggestion={(suggestion) => {
-          const mood = MOOD_FROM_LABEL[suggestion];
-          if (mood) addCheckIn(activePerson.id, mood);
-          else if (message) answerMessage(message.id);
-        }}
-      />
+      <div className="xl:grid xl:grid-cols-[1fr_320px] xl:items-start xl:gap-8">
+        <div className="min-w-0">
+          <FlowScope scope="mine">Mijn Flow</FlowScope>
 
-      {!myCheckIn ? (
-        <section className="mt-6">
-          <SectionTitle>Even voor jou</SectionTitle>
-          <CheckIn
-            question="Hoe gaat het vandaag met jou?"
-            onSelect={(mood, note) => addCheckIn(activePerson.id, mood, note)}
-          />
-        </section>
-      ) : null}
+          <div className="mt-4">
+            <CoachMessageCard
+              message={message}
+              loading={loading}
+              onRefresh={() => void generate(message?.kind === "checkin" ? "parent-tip" : "insight")}
+              onDismiss={message ? () => dismissMessage(message.id) : undefined}
+              onSuggestion={(suggestion) => {
+                const mood = MOOD_FROM_LABEL[suggestion];
+                if (mood) addCheckIn(activePerson.id, mood);
+                else if (message) answerMessage(message.id);
+              }}
+            />
+          </div>
 
-      <section className="mt-8">
-        <SectionTitle
-          action={
-            <Link href="/ouder/gezin" className="text-sm text-primary hover:underline">
-              Bekijken
-            </Link>
-          }
-        >
-          Vandaag
-        </SectionTitle>
-        <div className="space-y-3">
-          {kids.map((kid) => {
-            const progress = dayProgress(data, kid.id);
-            return (
-              <FamilyMemberCard
-                key={kid.id}
-                person={kid}
-                done={progress.done}
-                total={progress.total}
-                mood={checkInFor(data, kid.id)?.mood}
-                points={pointsFor(data, kid.id)}
-                href="/ouder/gezin"
+          {!myCheckIn ? (
+            <section className="mt-6">
+              <SectionTitle>Even voor jou</SectionTitle>
+              <CheckIn
+                question="Hoe gaat het vandaag met jou?"
+                onSelect={(mood, note) => addCheckIn(activePerson.id, mood, note)}
               />
+            </section>
+          ) : null}
+        </div>
+
+        <aside className="mt-8 xl:mt-0">
+          <Card tone="sage">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-primary/70">FamilyFlow Insight</p>
+            <p className="mt-2 text-[15px] leading-relaxed text-ink">
+              Deze week zijn {stats.tasksDone} van de {stats.tasksTotal} afspraken gelukt, met{" "}
+              {stats.checkIns} check-ins en beweging op {stats.movementDays} dagen.
+            </p>
+            <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.12em] text-primary/70">
+              {new Date().getHours() >= 17 ? "Tip voor vanavond" : "Wat kun jij vandaag doen?"}
+            </p>
+            <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{parentFocusSuggestion(data)}</p>
+            <Link href="/ouder/inzichten" className="mt-4 inline-block text-sm text-primary hover:underline">
+              Meer inzichten
+            </Link>
+          </Card>
+        </aside>
+      </div>
+
+      {/* OUR FLOW — het gezin zelf: wie is er, wie doet wat, wat vraagt aandacht. Eigen warme zone i.p.v. nog een kaart tussen de rest. */}
+      <section className="mt-10 -mx-5 rounded-t-[2rem] bg-sand-light px-5 py-8 sm:mx-0 sm:rounded-[2rem] sm:px-8">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <FlowScope scope="ours">Ons Flow</FlowScope>
+            <p className="mt-1 text-sm text-muted">Hoe het gezin er vandaag voor staat.</p>
+          </div>
+          <Link href="/ouder/gezin" className="shrink-0 text-sm font-medium text-primary hover:underline">
+            Bekijken
+          </Link>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-4">
+          {data.people.map((person) => {
+            const progress = person.role === "child" ? dayProgress(data, person.id) : null;
+            const pct = progress && progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : undefined;
+            return (
+              <div key={person.id} className="flex flex-col items-center gap-1.5">
+                <Avatar
+                  name={person.name}
+                  color={person.color}
+                  avatarVariant={person.avatarVariant}
+                  size="lg"
+                  ring={pct}
+                  ringBg="#FBF3E9"
+                />
+                <p className="max-w-[4.5rem] truncate text-xs font-medium text-ink">{person.name.split(" ")[0]}</p>
+                {progress && progress.total > 0 ? (
+                  <p className="text-[11px] text-muted">
+                    {progress.done}/{progress.total}
+                  </p>
+                ) : null}
+              </div>
             );
           })}
         </div>
 
-        {kids.some((kid) => (data.conflicts ?? []).some((c) => c.personId === kid.id && c.createdAt.slice(0, 10) === today)) ? (
-          <Card tone="sand" className="mt-3">
+        {kids.length > 0 ? (
+          <div className="mt-6 space-y-3">
+            {kids.map((kid) => {
+              const progress = dayProgress(data, kid.id);
+              return (
+                <FamilyMemberCard
+                  key={kid.id}
+                  person={kid}
+                  done={progress.done}
+                  total={progress.total}
+                  mood={checkInFor(data, kid.id)?.mood}
+                  points={pointsFor(data, kid.id)}
+                  href="/ouder/gezin"
+                />
+              );
+            })}
+          </div>
+        ) : null}
+
+        {conflictsToday.length > 0 ? (
+          <Card className="mt-4">
             <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-accent-dark">Family Coach signaleert</p>
             <div className="mt-2 space-y-1.5">
-              {kids.map((kid) => {
+              {conflictsToday.map((kid) => {
                 const todaysConflicts = (data.conflicts ?? []).filter(
                   (c) => c.personId === kid.id && c.createdAt.slice(0, 10) === today,
                 );
-                if (todaysConflicts.length === 0) return null;
                 const resolved = todaysConflicts.every((c) => c.status === "resolved" || c.status === "attempting");
                 return (
                   <p key={kid.id} className="text-[15px] leading-relaxed text-ink">
@@ -156,54 +212,41 @@ export default function ParentHome() {
             </div>
           </Card>
         ) : null}
-      </section>
 
-      <section className="mt-8">
-        <SectionTitle>FamilyFlow Insight</SectionTitle>
-        <Card tone="sage">
-          <p className="text-[15px] leading-relaxed text-ink">
-            Deze week zijn {stats.tasksDone} van de {stats.tasksTotal} afspraken gelukt, met{" "}
-            {stats.checkIns} check-ins en beweging op {stats.movementDays} dagen.
-          </p>
-          <p className="mt-4 text-[13px] font-semibold uppercase tracking-[0.12em] text-primary/70">
-            {new Date().getHours() >= 17 ? "Tip voor vanavond" : "Wat kun jij vandaag doen?"}
-          </p>
-          <p className="mt-1.5 text-[15px] leading-relaxed text-ink">{parentFocusSuggestion(data)}</p>
-          <Link href="/ouder/inzichten" className="mt-4 inline-block text-sm text-primary hover:underline">
-            Meer inzichten
-          </Link>
-        </Card>
-      </section>
-
-      <section className="mt-8">
-        <SectionTitle>Samen</SectionTitle>
-        {todaysActivity ? (
-          <Card>
-            <p className="font-medium text-ink">{todaysActivity.title}</p>
-            <p className="mt-1 text-sm leading-relaxed text-muted">{todaysActivity.description}</p>
-            <div className="mt-4 flex items-center justify-between">
+        <div className="mt-6">
+          {todaysActivity ? (
+            <Card>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent-dark">Vandaag samen</p>
+              <p className="mt-2 font-medium text-ink">{todaysActivity.title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted">{todaysActivity.description}</p>
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-sm text-muted">
+                  {todaysActivity.completedBy.length > 0
+                    ? `${todaysActivity.completedBy.length} van jullie doet mee`
+                    : "Nog niemand afgevinkt"}
+                </p>
+                <Button
+                  size="sm"
+                  variant={todaysActivity.completedBy.includes(activePerson.id) ? "soft" : "primary"}
+                  onClick={() => toggleActivity(todaysActivity.id, activePerson.id)}
+                >
+                  {todaysActivity.completedBy.includes(activePerson.id) ? "Je doet mee" : "Ik doe mee"}
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <Card tone="outline">
               <p className="text-sm text-muted">
-                {todaysActivity.completedBy.length > 0
-                  ? `${todaysActivity.completedBy.length} van jullie doet mee`
-                  : "Nog niemand afgevinkt"}
+                Vandaag staat er niets samen gepland. Eén klein gedeeld moment maakt de rest van de dag vaak
+                makkelijker.
               </p>
-              <Button
-                size="sm"
-                variant={todaysActivity.completedBy.includes(activePerson.id) ? "soft" : "primary"}
-                onClick={() => toggleActivity(todaysActivity.id, activePerson.id)}
-              >
-                {todaysActivity.completedBy.includes(activePerson.id) ? "Je doet mee" : "Ik doe mee"}
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <Card tone="outline">
-            <p className="text-sm text-muted">
-              Vandaag staat er niets samen gepland. Eén klein gedeeld moment maakt de rest van de dag
-              vaak makkelijker.
-            </p>
-          </Card>
-        )}
+            </Card>
+          )}
+        </div>
+
+        <div className="mt-6">
+          <FamilyTeamStrip data={data} />
+        </div>
       </section>
 
       <Disclaimer className="mt-10 px-1 text-xs leading-relaxed text-muted" />

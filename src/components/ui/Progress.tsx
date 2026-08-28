@@ -36,8 +36,8 @@ export function Progress({ value, max = 100, label, tone = "primary", className 
 }
 
 const RING_TONE: Record<"primary" | "progress", { track: string; fill: string }> = {
-  primary: { track: "#DCEFF0", fill: "#0E7C86" },
-  progress: { track: "#DFF3F1", fill: "#1A8E85" },
+  primary: { track: "#DFF6E7", fill: "#0F7A3D" },
+  progress: { track: "#D7F3EF", fill: "#0D8074" },
 };
 
 export function Ring({
@@ -122,13 +122,13 @@ export function DualRing({
         strokeDashoffset={outerCircumference * (1 - familyRatio)}
         className="transition-[stroke-dashoffset] duration-700 ease-out"
       />
-      <circle cx={size / 2} cy={size / 2} r={innerRadius} fill="none" stroke="rgba(51,199,192,0.22)" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={innerRadius} fill="none" stroke="rgba(61,209,111,0.22)" strokeWidth={stroke} />
       <circle
         cx={size / 2}
         cy={size / 2}
         r={innerRadius}
         fill="none"
-        stroke="#33C7C0"
+        stroke="#3DD16F"
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={innerCircumference}

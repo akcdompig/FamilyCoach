@@ -408,7 +408,7 @@ export default function ChildHome() {
                   avatarVariant={person.avatarVariant}
                   size="lg"
                   ring={pct}
-                  ringBg="#F7F1E6"
+                  ringBg="#FBF3E9"
                 />
                 <p className="max-w-[4.5rem] truncate text-xs font-medium text-ink">{person.name.split(" ")[0]}</p>
                 {progress && progress.total > 0 ? (

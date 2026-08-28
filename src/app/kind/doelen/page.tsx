@@ -426,7 +426,7 @@ function GoalsPageInner() {
               <DualRing individual={personalPct} family={sharedPct} max={100} size={104} />
               <div className="min-w-0 space-y-2 text-sm">
                 <p className="flex items-center gap-1.5 text-white/80">
-                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
+                  <span className="h-2 w-2 rounded-full bg-primary-light" />
                   Eigen doelen
                 </p>
                 <p className="flex items-center gap-1.5 text-white/60">

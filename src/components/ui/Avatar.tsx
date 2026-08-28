@@ -30,7 +30,7 @@ const SIZES = {
 
 const RING_TRACK = "#E8E1D3";
 
-export function Avatar({ name, color = "#0E7C86", size = "md", className, avatarVariant, ring, glow, ringBg = "#F8F6F1" }: Props) {
+export function Avatar({ name, color = "#0F7A3D", size = "md", className, avatarVariant, ring, glow, ringBg = "#FFFBF5" }: Props) {
   const initials = name
     .split(" ")
     .map((part) => part.charAt(0))

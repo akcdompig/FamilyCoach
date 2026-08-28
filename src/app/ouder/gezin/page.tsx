@@ -27,7 +27,7 @@ import {
   isDone,
 } from "@/lib/utils";
 
-const COLORS = ["#B84C0A", "#0E7C86", "#1A8E85", "#726858", "#35A0AA"];
+const COLORS = ["#C43A28", "#0F7A3D", "#0D8074", "#3B1F63", "#F2A900"];
 
 export default function FamilyPage() {
   const { data, addPerson, approveRedemption, denyRedemption } = useFamilyFlow();

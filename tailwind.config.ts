@@ -5,51 +5,52 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#F8F6F1",
+        paper: "#FFFBF5",
         surface: "#FFFFFF",
-        ink: "#201C1A",
-        muted: "#726858",
-        line: "#E8E1D3",
+        ink: "#231433",
+        muted: "#7C6E86",
+        line: "#F0E3D5",
+        /** Fel, verzadigd groen — merk/identiteit, tekst-links, nav-actief. >=4.5:1 op paper én als witte tekst erop. */
         primary: {
-          DEFAULT: "#0E7C86",
-          dark: "#0B5A62",
-          light: "#35A0AA",
+          DEFAULT: "#0F7A3D",
+          dark: "#0B5C2E",
+          light: "#3DD16F",
         },
-        /** Donkere dashboard-ondergrond voor hero-kaarten (ring + sterren-samenvatting). */
+        /** Diep paars — voorheen "navy", zelfde rol (donkere premium ondergrond), fellere familie. */
         navy: {
-          DEFAULT: "#0F2A3D",
-          dark: "#081722",
-          light: "#1D4159",
+          DEFAULT: "#3B1F63",
+          dark: "#241041",
+          light: "#5B3A8E",
         },
         sage: {
-          DEFAULT: "#DCEFF0",
-          light: "#EEF7F8",
-          dark: "#C1DEE0",
+          DEFAULT: "#DFF6E7",
+          light: "#EFFBF3",
+          dark: "#BFEAD1",
         },
         sand: {
-          DEFAULT: "#EFE6D6",
-          light: "#F7F1E6",
+          DEFAULT: "#F5E4D3",
+          light: "#FBF3E9",
         },
-        /** "Energie": actie, voltooiing, "jouw beurt"-momenten. Donker genoeg voor 4.5:1 met witte tekst. */
+        /** "Energie": actie, voltooiing, "jouw beurt"-momenten. Verzadigd koraalrood, >=4.5:1 met witte tekst. */
         accent: {
-          DEFAULT: "#B84C0A",
-          soft: "#FDE7D6",
-          dark: "#913C08",
+          DEFAULT: "#C43A28",
+          soft: "#FDE2DC",
+          dark: "#9E2E1F",
         },
         /** Uitsluitend voor doelen/groei-voortgang — nooit voor generieke acties. */
         progress: {
-          DEFAULT: "#1A8E85",
-          soft: "#DFF3F1",
-          dark: "#136158",
+          DEFAULT: "#0D8074",
+          soft: "#D7F3EF",
+          dark: "#0A6259",
         },
         danger: {
-          DEFAULT: "#B0403A",
-          soft: "#F5E1DE",
-          dark: "#8A2F2A",
+          DEFAULT: "#DC2626",
+          soft: "#FDE4E1",
+          dark: "#B91C1C",
         },
-        /** Sterren-waardering — alleen voor StarRating, nergens anders. Getest tegen wit én navy (>=3:1). */
+        /** Sterren-waardering — alleen voor StarRating, nergens anders. Icoon-contrast (>=3:1) tegen wit én navy. */
         star: {
-          DEFAULT: "#C2830A",
+          DEFAULT: "#B8790A",
           muted: "#9B927E",
         },
       },
