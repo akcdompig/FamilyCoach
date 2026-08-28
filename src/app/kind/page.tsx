@@ -7,19 +7,21 @@ import { CheckIn } from "@/components/CheckIn";
 import { CoachMessageCard } from "@/components/CoachMessageCard";
 import { DayRhythm } from "@/components/DayRhythm";
 import { ConfettiBurst, useConfetti } from "@/components/effects/ConfettiBurst";
+import { FamilyTeamStrip } from "@/components/FamilyTeamStrip";
 import { FlowAvatar } from "@/components/flow/FlowAvatar";
 import { FlowInsightCard } from "@/components/flow/FlowInsightCard";
+import { GoalJourney } from "@/components/GoalJourney";
 import { Icon } from "@/components/Icons";
 import { TaskCard } from "@/components/TaskCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card, SectionTitle } from "@/components/ui/Card";
+import { FlowScope } from "@/components/ui/FlowScope";
 import { EmptyState } from "@/components/ui/Skeleton";
-import { DualRing, Progress } from "@/components/ui/Progress";
 import { StarRating } from "@/components/ui/StarRating";
 import { useToast } from "@/components/ui/Toast";
 import { activeMessage, useCoachMoment } from "@/lib/coach/useCoach";
 import { useFlowRuntime } from "@/lib/flow/FlowRuntime";
-import { allowanceFor, badgeLabel, familyProgress, pointsSummary } from "@/lib/gamification";
+import { allowanceFor, badgeLabel, pointsSummary } from "@/lib/gamification";
 import { useFamilyFlow } from "@/lib/store/FamilyFlowProvider";
 import type { Mood } from "@/lib/types";
 import {
@@ -28,12 +30,15 @@ import {
   children,
   combinedAchievementFor,
   dateKey,
+  dayProgress,
+  goalAchieved,
   GOAL_DOMAIN_ICON,
   goalDomain,
   goalProgressFor,
   goalsLinkedToTask,
   greeting,
   isDone,
+  milestonesFor,
   minutesFromString,
   minutesNow,
   movedInTasks,
@@ -140,8 +145,6 @@ export default function ChildHome() {
   const points = pointsFor(data, child.id);
   const summary = pointsSummary(data, target.id);
   const individualPct = withStatus.length > 0 ? Math.round((doneList.length / withStatus.length) * 100) : 0;
-  const family = familyProgress(data);
-  const familyPct = family.total > 0 ? Math.round((family.done / family.total) * 100) : 0;
   const achievement = combinedAchievementFor(data, child.id);
   const wallet = allowanceFor(data, child);
   const activity = data.activities.find((item) => item.date === todayKey);
@@ -182,71 +185,53 @@ export default function ChildHome() {
     <AppShell role="child">
       <ConfettiBurst trigger={trigger} />
 
-      <header className="mb-6">
-        <Card tone="hero" className="overflow-hidden">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm capitalize text-white/60">
-                {WEEKDAY_LONG[today.getDay()]} · {withStatus.length > 0 ? `${doneList.length}/${withStatus.length} klaar` : "vrije dag"}
-              </p>
-              <h1 className="mt-1 font-display text-[26px] font-semibold leading-tight text-white sm:text-[30px]">
-                {greeting()}, {child.name}
-              </h1>
-              <p className="mt-1 text-sm text-white/70">
-                {withStatus.length === 0
-                  ? "Vandaag staat er niets gepland. Fijne dag."
-                  : open.length === 0
-                    ? "Alles van vandaag staat af. Mooi."
-                    : `Nog ${open.length} ${open.length === 1 ? "ding" : "dingen"} vandaag. Je hoeft niet alles tegelijk.`}
-              </p>
-              <div className="mt-3">
-                <StarRating percentage={achievement} />
-              </div>
-            </div>
-            <Avatar name={child.name} color={child.color} avatarVariant={child.avatarVariant} size="lg" className="shrink-0" />
-          </div>
-
-          {withStatus.length > 0 ? (
-            <div className="mt-5 flex items-center gap-5">
-              <DualRing individual={individualPct} family={familyPct} max={100} size={104} />
-              <div className="min-w-0 space-y-2 text-sm">
-                <p className="flex items-center gap-1.5 text-white/80">
-                  <span className="h-2 w-2 rounded-full bg-[#33C7C0]" />
-                  Jouw bijdrage vandaag
-                </p>
-                <p className="flex items-center gap-1.5 text-white/60">
-                  <span className="h-2 w-2 rounded-full bg-white/55" />
-                  Gezinsscore vandaag
-                </p>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
-              <Icon name="flame" className="h-3.5 w-3.5 text-accent" />
-              <span className="font-mono font-semibold text-white">{summary.streak}</span>
-              <span className="text-white/60">{badgeLabel(data, child.id)}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
-              <span className="font-mono font-semibold text-white">+{summary.today}</span>
-              <span className="text-white/60">vandaag</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm">
-              <span className="font-mono font-semibold text-white">{points}</span>
-              <span className="text-white/60">punten totaal</span>
+      {/* ME — wie ben ik, hoe gaat het vandaag. Geen donkere dashboard-doos: de avatar en naam dragen de identiteit. */}
+      <header className="mb-8 flex items-start gap-4 sm:gap-5">
+        <Avatar
+          name={child.name}
+          color={child.color}
+          avatarVariant={child.avatarVariant}
+          size="xl"
+          glow
+          ring={withStatus.length > 0 ? individualPct : undefined}
+          className="mt-1"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm capitalize text-muted">{WEEKDAY_LONG[today.getDay()]}</p>
+          <h1 className="mt-0.5 font-display text-[28px] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[38px]">
+            {greeting()}, {child.name}
+          </h1>
+          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted">
+            {withStatus.length === 0
+              ? "Vandaag staat er niets gepland. Fijne dag."
+              : open.length === 0
+                ? "Alles van vandaag staat af. Mooi."
+                : `Nog ${open.length} ${open.length === 1 ? "ding" : "dingen"} vandaag. Je hoeft niet alles tegelijk.`}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <StarRating percentage={achievement} size="sm" />
+            {summary.streak > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-sand-light px-3 py-1 text-sm">
+                <Icon name="flame" className="h-3.5 w-3.5 text-accent" />
+                <span className="font-mono font-semibold text-ink">{summary.streak}</span>
+                <span className="text-muted">{badgeLabel(data, child.id)}</span>
+              </span>
+            ) : null}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-sage-light px-3 py-1 text-sm">
+              <span className="font-mono font-semibold text-ink">{points}</span>
+              <span className="text-muted">punten</span>
             </span>
           </div>
-        </Card>
+        </div>
       </header>
 
       {suggestion ? (
         <button
           type="button"
           onClick={openPanel}
-          className="mb-6 flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-sage-light via-surface to-sand-light p-5 text-left shadow-soft ring-1 ring-sage-dark/40 transition hover:-translate-y-0.5"
+          className="mb-6 flex w-full items-center gap-4 rounded-3xl bg-gradient-to-br from-sage-light via-surface to-sand-light p-5 text-left shadow-soft transition hover:-translate-y-0.5"
         >
-          <FlowAvatar state="coaching" size={48} />
+          <FlowAvatar state="coaching" size={56} />
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-primary/70">Flow zegt</p>
             <p className="mt-1 text-[16px] leading-relaxed text-ink">{suggestion.message}</p>
@@ -261,8 +246,10 @@ export default function ChildHome() {
 
       <div className="xl:grid xl:grid-cols-[1fr_320px] xl:items-start xl:gap-8">
         <div className="min-w-0">
+          <FlowScope scope="mine">Mijn Flow</FlowScope>
+
           {nextUp ? (
-            <section>
+            <section className="mt-4">
               <SectionTitle>Wat nu?</SectionTitle>
               <TaskCard
                 task={nextUp.task}
@@ -276,7 +263,7 @@ export default function ChildHome() {
               />
             </section>
           ) : withStatus.length > 0 ? (
-            <Card tone="sage" className="animate-pop">
+            <Card tone="sage" className="mt-4 animate-pop">
               <p className="text-[16px] font-medium leading-relaxed text-ink">
                 Alles van vandaag staat af. Dat heb je zelf gedaan.
               </p>
@@ -362,36 +349,27 @@ export default function ChildHome() {
                 Waar ik naartoe werk
               </p>
               <p className="mt-2 font-medium text-ink">{nearestGoal.title}</p>
-              <div className="mt-3 flex items-baseline justify-between text-sm text-muted">
+              <GoalJourney
+                goal={nearestGoal}
+                progress={nearestGoalProgress}
+                milestones={milestonesFor(nearestGoal)}
+                achieved={goalAchieved(data, nearestGoal)}
+                className="mt-4"
+              />
+              <div className="mt-1 flex items-baseline justify-between text-sm text-muted">
                 <span className="font-mono tabular-nums">
                   {nearestGoalProgress}/{nearestGoal.target} {nearestGoal.unit ?? ""}
                 </span>
                 <span>+{nearestGoal.points} punten</span>
               </div>
-              <Progress value={nearestGoalProgress} max={nearestGoal.target} tone="progress" className="mt-2" />
               <Link href="/kind/doelen" className="mt-3 inline-block text-sm text-primary hover:underline">
                 Al mijn doelen
               </Link>
             </Card>
           ) : null}
 
-          {activity ? (
-            <Card tone="sage">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-primary/70">Samen vandaag</p>
-              <p className="mt-2 font-medium text-ink">{activity.title}</p>
-              <p className="mt-1 text-sm text-muted">{activity.description}</p>
-              <button
-                type="button"
-                onClick={() => toggleActivity(activity.id, child.id)}
-                className="mt-3 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
-              >
-                {joinedActivity ? "Je doet mee" : "Ik doe mee"}
-              </button>
-            </Card>
-          ) : null}
-
           <Link href="/kind/wallet" className="block">
-            <Card tone="sand" className="transition hover:-translate-y-0.5">
+            <Card tone="accent" className="transition hover:-translate-y-0.5">
               <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent-dark">Mijn zakgeld</p>
               <p className="mt-2 text-3xl font-semibold text-ink">
                 <span className="font-mono">€{wallet.earned.toFixed(2)}</span>{" "}
@@ -412,6 +390,63 @@ export default function ChildHome() {
           </Link>
         </aside>
       </div>
+
+      {/* OUR FLOW — het gezin zelf: wie is er, wie doet mee, wat is gedeeld. Bewust een eigen, warme zone i.p.v. nog een kaart in de zijbalk. */}
+      <section className="mt-10 -mx-5 rounded-t-[2rem] bg-sand-light px-5 py-8 sm:mx-0 sm:rounded-[2rem] sm:px-8">
+        <FlowScope scope="ours">Ons Flow</FlowScope>
+        <p className="mt-1 text-sm text-muted">Wat het hele gezin samen doet en deelt.</p>
+
+        <div className="mt-5 flex flex-wrap gap-4">
+          {data.people.map((person) => {
+            const progress = person.role === "child" ? dayProgress(data, person.id) : null;
+            const pct = progress && progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : undefined;
+            return (
+              <div key={person.id} className="flex flex-col items-center gap-1.5">
+                <Avatar
+                  name={person.name}
+                  color={person.color}
+                  avatarVariant={person.avatarVariant}
+                  size="lg"
+                  ring={pct}
+                  ringBg="#F7F1E6"
+                />
+                <p className="max-w-[4.5rem] truncate text-xs font-medium text-ink">{person.name.split(" ")[0]}</p>
+                {progress && progress.total > 0 ? (
+                  <p className="text-[11px] text-muted">
+                    {progress.done}/{progress.total}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+
+        {activity ? (
+          <Card className="mt-6">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent-dark">Vandaag samen</p>
+            <p className="mt-2 font-medium text-ink">{activity.title}</p>
+            <p className="mt-1 text-sm text-muted">{activity.description}</p>
+            <button
+              type="button"
+              onClick={() => toggleActivity(activity.id, child.id)}
+              className="mt-3 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-primary-dark"
+            >
+              {joinedActivity ? "Je doet mee" : "Ik doe mee"}
+            </button>
+          </Card>
+        ) : (
+          <Card tone="outline" className="mt-6">
+            <p className="text-sm text-muted">
+              Vandaag staat er niets samen gepland. Eén klein gedeeld moment maakt de rest van de dag vaak
+              makkelijker.
+            </p>
+          </Card>
+        )}
+
+        <div className="mt-6">
+          <FamilyTeamStrip data={data} />
+        </div>
+      </section>
     </AppShell>
   );
 }

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/Icons";
 import type { Task } from "@/lib/types";
-import { CATEGORY_ICON, CATEGORY_LABEL, cx } from "@/lib/utils";
+import { CATEGORY_COLOR, CATEGORY_ICON, CATEGORY_LABEL, cx } from "@/lib/utils";
 
 interface Props {
   task: Task;
@@ -115,9 +115,11 @@ export function TaskCard({
               {task.title}
             </p>
           </div>
-          <p className="mt-0.5 flex items-center gap-2 text-xs text-muted">
-            <span className="inline-flex items-center gap-1">
-              <Icon name={CATEGORY_ICON[task.category]} className="h-3.5 w-3.5" />
+          <p className="mt-1 flex items-center gap-2 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <span className={cx("flex h-4 w-4 items-center justify-center rounded-full", CATEGORY_COLOR[task.category].bg)}>
+                <Icon name={CATEGORY_ICON[task.category]} className={cx("h-2.5 w-2.5", CATEGORY_COLOR[task.category].text)} />
+              </span>
               {CATEGORY_LABEL[task.category]}
             </span>
             {task.time ? <span className="font-mono tabular-nums">· {task.time}</span> : null}

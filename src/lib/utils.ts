@@ -402,6 +402,19 @@ export const CATEGORY_ICON: Record<Category, IconName> = {
   samen: "heart",
 };
 
+/** Elke categorie krijgt een eigen getinte kleur (naast het icoon) zodat een dag herkenbaar oogt, niet als een grijze lijst. */
+export const CATEGORY_COLOR: Record<Category, { bg: string; text: string }> = {
+  ochtend: { bg: "bg-accent-soft", text: "text-accent-dark" },
+  school: { bg: "bg-sage-light", text: "text-primary-dark" },
+  beweging: { bg: "bg-progress-soft", text: "text-progress-dark" },
+  wellness: { bg: "bg-navy/10", text: "text-navy" },
+  lezen: { bg: "bg-sand-light", text: "text-accent-dark" },
+  scherm: { bg: "bg-ink/5", text: "text-muted" },
+  avond: { bg: "bg-navy/10", text: "text-navy" },
+  huishouden: { bg: "bg-sand", text: "text-ink/70" },
+  samen: { bg: "bg-sage", text: "text-primary-dark" },
+};
+
 export const MOOD_LABEL: Record<Mood, string> = {
   good: "Goed",
   ok: "Gaat wel",
